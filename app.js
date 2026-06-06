@@ -4,11 +4,11 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
-var MySQLStore = require('express-mysql-session')(session);
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
+const usulanRouter = require("./routes/usulan");
 
 var app = express();
 
@@ -22,27 +22,18 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session configuration
-const sessionStore = new MySQLStore({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
-
 app.use(session({
-  key: 'session_cookie_name',
   secret: process.env.SESSION_SECRET || 'secret',
-  store: sessionStore,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24 // 1 day
+    maxAge: 1000 * 60 * 60 * 24
   }
 }));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use("/usulan", usulanRouter);
 
 // catch 404 and forward to error handler
 app.use(notFoundHandler);
