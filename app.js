@@ -8,11 +8,12 @@ var MySQLStore = require('express-mysql-session')(session);
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var procurementsRouter = require('./routes/procurements');
+var apiProcurementsRouter = require('./routes/apiProcurements');
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
 
 var app = express();
 
-// view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -22,32 +23,49 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session configuration
-const sessionStore = new MySQLStore({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
+// Default pakai MemoryStore supaya tidak bentrok dengan tabel sessions Laravel
+// yang memiliki kolom payload/last_activity, bukan data/expires.
+let sessionStore;
+if (process.env.USE_MYSQL_SESSION === 'true') {
+  sessionStore = new MySQLStore({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    createDatabaseTable: false,
+    schema: {
+      tableName: process.env.EXPRESS_SESSION_TABLE || 'express_sessions',
+      columnNames: {
+        session_id: 'session_id',
+        expires: 'expires',
+        data: 'data'
+      }
+    }
+  });
+}
 
 app.use(session({
-  key: 'session_cookie_name',
-  secret: process.env.SESSION_SECRET || 'secret',
+  key: 'facultyware_session',
+  secret: process.env.SESSION_SECRET || 'facultyware-secret',
   store: sessionStore,
   resave: false,
   saveUninitialized: false,
-  cookie: {
-    maxAge: 1000 * 60 * 60 * 24 // 1 day
-  }
+  cookie: { maxAge: 1000 * 60 * 60 * 24 }
 }));
+
+app.use((req, res, next) => {
+  res.locals.currentUser = req.session.user || null;
+  res.locals.flash = req.session.flash || null;
+  delete req.session.flash;
+  next();
+});
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/procurements', procurementsRouter);
+app.use('/api', apiProcurementsRouter);
 
-// catch 404 and forward to error handler
 app.use(notFoundHandler);
-
-// error handler
 app.use(errorHandler);
 
 module.exports = app;
