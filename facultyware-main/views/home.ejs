@@ -1,0 +1,5 @@
+<% if (isPengelolaAset) { %>
+  <%- include('partials/pengelola_aset_home', { title, user, roles, summary }) %>
+<% } else { %>
+  <%- include('home_default', { title, user }) %>
+<% } %>
