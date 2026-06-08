@@ -17,6 +17,23 @@
     "express-session": "^1.19.0",
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1",
-    "mysql2": "^3.22.3"
-  }
+    "mysql2": "^3.22.3",
+    "pdfkit": "^0.15.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  },
+  "description": "Sistem Informasi Pengadaan Barang - FacultyWare",
+  "main": "app.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/END0310/facultyware.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
 }
