@@ -60,6 +60,18 @@ const login = async (req, res, next) => {
     // agar view dosen tidak perlu diubah
     req.session.username = user.name;
 
+    // Ambil role user untuk redirect
+    const [roleRows] = await db.query(
+      "SELECT r.name FROM roles r JOIN model_has_roles mhr ON r.id = mhr.role_id WHERE mhr.model_id = ?",
+      [user.id]
+    );
+    const roles = roleRows.map(r => r.name);
+    
+    // Redirect sesuai role
+    if (roles.includes('wakildekan')) {
+      return res.redirect('/wakildekan/permohonan');
+    }
+
     res.redirect("/home");
   } catch (err) {
     next(err);

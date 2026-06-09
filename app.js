@@ -8,7 +8,9 @@ var session = require('express-session');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
+const { loadUserRoles } = require('./middlewares/acl');
 const usulanRouter = require("./routes/usulan");
+const wakildekanRouter = require('./routes/wakildekan');
 
 var app = express();
 
@@ -31,9 +33,12 @@ app.use(session({
   }
 }));
 
+app.use(loadUserRoles);
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use("/usulan", usulanRouter);
+app.use('/wakildekan', wakildekanRouter);
 
 // catch 404 and forward to error handler
 app.use(notFoundHandler);

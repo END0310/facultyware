@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem("themeMode");
+          if (stored ? stored === "dark" : matchMedia("(prefers-color-scheme: dark)").matches) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+      })();
+    </script>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>403 Akses Ditolak — Facultyware</title>
+
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+
+  <body class="bg-muted/30 min-h-screen flex items-center justify-center p-4">
+    <div class="card max-w-md w-full text-center py-12">
+      <div class="mx-auto flex size-16 items-center justify-center rounded-full bg-destructive/10 text-destructive mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
+          <path d="m9 12 2 2 4-4"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      
+      <h1 class="text-3xl font-bold tracking-tight mb-2">403</h1>
+      <h2 class="text-xl font-semibold mb-3">Akses Ditolak</h2>
+      <p class="text-muted-foreground text-sm mb-8 px-4">
+        Maaf, Anda tidak memiliki peran (role) yang dibutuhkan untuk mengakses halaman ini. Jika menurut Anda ini adalah kesalahan, silakan hubungi Administrator.
+      </p>
+      
+      <button onclick="window.history.back()" class="btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="m15 18-6-6 6-6"/></svg>
+        Kembali ke Halaman Sebelumnya
+      </button>
+    </div>
+  </body>
+</html>
