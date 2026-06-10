@@ -6,10 +6,12 @@ var logger = require('morgan');
 var session = require('express-session');
 var MySQLStore = require('express-mysql-session')(session);
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var procurementsRouter = require('./routes/procurements');
-var apiProcurementsRouter = require('./routes/apiProcurements');
+var authRouter = require('./routes/auth/index');
+var adminRouter = require('./routes/admin/index');
+var adminUsersRouter = require('./routes/admin/users');
+var pengelolaAsetDashboardRouter = require('./routes/pengelola-aset/dashboard');
+var procurementsRouter = require('./routes/pengelola-aset/procurements');
+var apiProcurementsRouter = require('./routes/pengelola-aset/apiProcurements');
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
 
 var app = express();
@@ -60,8 +62,10 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/', authRouter);
+app.use('/', pengelolaAsetDashboardRouter);
+app.use('/admin', adminRouter);
+app.use('/admin/users', adminUsersRouter);
 app.use('/procurements', procurementsRouter);
 app.use('/api', apiProcurementsRouter);
 

@@ -1,0 +1,70 @@
+<%- include('../partials/header', { title, flash }) %>
+<%
+  const currentFilters = typeof filters !== 'undefined' ? filters : {};
+  const currentReportType = typeof reportType !== 'undefined'
+    ? reportType
+    : (currentFilters.report_type || 'procurements');
+  const currentStatuses = Array.isArray(statuses) ? statuses : [];
+  const currentRows = Array.isArray(rows) ? rows : [];
+%>
+<div class="fw-card">
+  <h1 class="fw-title">Rekap Pengadaan</h1>
+  <p class="fw-subtitle">Filter rekap usulan, permohonan, atau list asset lalu export CSV sesuai kebutuhan.</p>
+</div>
+<form class="fw-card fw-form-card" method="get" action="/procurements/report" data-report-filter-form>
+  <div class="fw-form-header">
+    <h2 class="fw-form-title">Filter Rekap</h2>
+    <p class="fw-form-copy">Gunakan filter berikut untuk mempersempit data laporan sebelum export CSV.</p>
+  </div>
+  <div class="fw-grid">
+    <div class="fw-field"><label>Jenis Rekap</label><select name="report_type" data-report-type-select><option value="requests" <%= currentReportType === 'requests' ? 'selected' : '' %>>Usulan</option><option value="procurements" <%= currentReportType === 'procurements' ? 'selected' : '' %>>Permohonan</option><option value="assets" <%= currentReportType === 'assets' ? 'selected' : '' %>>List Asset</option></select></div>
+    <div class="fw-field"><label>Status</label><select name="status" data-report-status-select><option value="">Semua</option><% currentStatuses.forEach(s => { %><option value="<%= s %>" <%= currentFilters.status === s ? 'selected' : '' %>><%= s %></option><% }) %></select></div>
+    <div class="fw-field"><label>Tanggal Awal</label><input type="date" name="start_date" value="<%= currentFilters.start_date || '' %>"></div>
+    <div class="fw-field"><label>Tanggal Akhir</label><input type="date" name="end_date" value="<%= currentFilters.end_date || '' %>"></div>
+  </div>
+  <div class="fw-form-actions">
+    <button class="fw-btn primary" type="submit">Filter</button>
+    <a class="fw-btn" href="/procurements/report/print?report_type=<%= currentReportType %>&status=<%= currentFilters.status || '' %>&start_date=<%= currentFilters.start_date || '' %>&end_date=<%= currentFilters.end_date || '' %>" target="_blank" rel="noreferrer">Cetak</a>
+    <a class="fw-btn" href="/procurements/report/export?report_type=<%= currentReportType %>&status=<%= currentFilters.status || '' %>&start_date=<%= currentFilters.start_date || '' %>&end_date=<%= currentFilters.end_date || '' %>">Export CSV</a>
+  </div>
+</form>
+<div class="fw-card">
+  <% if (currentReportType === 'requests') { %>
+    <table class="fw-table">
+      <thead><tr><th>No Usulan</th><th>Nama Barang</th><th>Spesifikasi</th><th>Jumlah</th><th>Status</th><th>Created</th><th>Updated</th><th>Pengusul</th></tr></thead>
+      <tbody>
+        <% if (!currentRows.length) { %><tr><td colspan="8">Data tidak ditemukan.</td></tr><% } %>
+        <% currentRows.forEach(r => { %>
+          <tr>
+            <td><%= r.request_number %></td><td><%= r.name %></td><td><%= r.specification || '-' %></td><td><%= r.quantity %></td><td><span class="fw-badge <%= r.status %>"><%= r.status %></span></td><td><%= r.created_at || '-' %></td><td><%= r.updated_at || '-' %></td><td><%= r.employee_name || '-' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else if (currentReportType === 'assets') { %>
+    <table class="fw-table">
+      <thead><tr><th>Kode Asset</th><th>Nama Asset</th><th>Brand/Model</th><th>Serial Number</th><th>Spesifikasi</th><th>Tanggal Perolehan</th><th>Harga</th><th>Status</th></tr></thead>
+      <tbody>
+        <% if (!currentRows.length) { %><tr><td colspan="8">Data tidak ditemukan.</td></tr><% } %>
+        <% currentRows.forEach(r => { %>
+          <tr>
+            <td><%= r.code %></td><td><%= r.name %></td><td><%= [r.brand, r.model].filter(Boolean).join(' / ') || '-' %></td><td><%= r.serial_number || '-' %></td><td><%= r.specification || '-' %></td><td><%= r.acquisition_date || '-' %></td><td>Rp <%= rupiah(r.acquisition_cost) %></td><td><span class="fw-badge"><%= r.status || '-' %></span></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <table class="fw-table">
+      <thead><tr><th>No Permohonan</th><th>Judul</th><th>Barang</th><th>Jumlah</th><th>Estimasi</th><th>Status</th><th>Created</th><th>Updated</th><th>Created By</th></tr></thead>
+      <tbody>
+        <% if (!currentRows.length) { %><tr><td colspan="9">Data tidak ditemukan.</td></tr><% } %>
+        <% currentRows.forEach(r => { %>
+          <tr>
+            <td><%= r.request_number %></td><td><%= r.title %></td><td><%= r.item_name || '-' %></td><td><%= r.quantity || '-' %></td><td>Rp <%= rupiah(r.estimated_price) %></td><td><span class="fw-badge <%= r.status %>"><%= r.status %></span></td><td><%= r.created_at || '-' %></td><td><%= r.updated_at || '-' %></td><td><%= r.created_by_name || '-' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</div>
+<%- include('../partials/footer') %>

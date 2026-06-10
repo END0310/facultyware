@@ -1,0 +1,37 @@
+<%- include('../../partials/header', { title, flash }) %>
+<div class="fw-card">
+  <h1 class="fw-title">Detail Usulan: <%= request.request_number %></h1>
+  <p class="fw-subtitle"><span class="fw-badge <%= request.status %>"><%= request.status %></span></p>
+</div>
+<div class="fw-grid">
+  <div class="fw-card">
+    <h2>Informasi Usulan</h2>
+    <table class="fw-table">
+      <tr><th>Nama Barang</th><td><%= request.name %></td></tr>
+      <tr><th>Spesifikasi</th><td><%= request.specification || '-' %></td></tr>
+      <tr><th>Jumlah</th><td><%= request.quantity %></td></tr>
+      <tr><th>Pengusul</th><td><%= request.employee_name || '-' %></td></tr>
+      <tr><th>Submitted</th><td><%= request.submitted_at || '-' %></td></tr>
+      <tr><th>Disetujui oleh</th><td><%= request.approved_by_name || '-' %></td></tr>
+      <tr><th>Approved at</th><td><%= request.approved_at || '-' %></td></tr>
+    </table>
+  </div>
+  <div class="fw-card">
+    <h2>Aksi Pengelola Aset</h2>
+    <form class="fw-form-card" action="/procurements/requests/<%= request.id %>/status" method="post" style="padding:16px;border-radius:16px;">
+      <div class="fw-field">
+        <label>Status Usulan</label>
+        <select name="status" required>
+          <% requestStatuses.forEach(s => { %><option value="<%= s %>" <%= request.status === s ? 'selected' : '' %>><%= s %></option><% }) %>
+        </select>
+        <p class="fw-field-tip">Pilih status terbaru agar proses pengadaan berikutnya sesuai alur.</p>
+      </div>
+      <div class="fw-form-actions" style="margin-top:12px;">
+        <button class="fw-btn primary" type="submit">Ubah Status</button>
+      </div>
+    </form>
+    <hr style="margin:16px 0;border:0;border-top:1px solid #e2e8f0">
+    <a class="fw-btn primary" href="/procurements/create?request_id=<%= request.id %>">Buat Permohonan dari Usulan</a>
+  </div>
+</div>
+<%- include('../../partials/footer') %>
