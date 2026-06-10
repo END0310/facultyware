@@ -13,6 +13,8 @@ var pengelolaAsetDashboardRouter = require('./routes/pengelola-aset/dashboard');
 var procurementsRouter = require('./routes/pengelola-aset/procurements');
 var apiProcurementsRouter = require('./routes/pengelola-aset/apiProcurements');
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
+const usulanRouter = require('./routes/usulan');
+const wakildekanRouter = require('./routes/wakildekan');
 
 var app = express();
 
@@ -66,6 +68,8 @@ app.use('/', authRouter);
 app.use('/', pengelolaAsetDashboardRouter);
 app.use('/admin', adminRouter);
 app.use('/admin/users', adminUsersRouter);
+app.use('/usulan', usulanRouter);
+app.use('/wakildekan', wakildekanRouter);
 app.use('/procurements', procurementsRouter);
 app.use('/api', apiProcurementsRouter);
 
