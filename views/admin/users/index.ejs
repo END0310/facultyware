@@ -1,0 +1,38 @@
+<%- include('../partials/header', { title, flash }) %>
+<div class="fw-card">
+  <h1 class="fw-title">Manajemen Akun</h1>
+  <p class="fw-subtitle">Halaman ini hanya dapat diakses admin untuk mengelola nama, email, dan reset password akun.</p>
+</div>
+<div class="fw-card">
+  <table class="fw-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nama</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (!users.length) { %>
+        <tr><td colspan="5">Belum ada akun.</td></tr>
+      <% } %>
+      <% users.forEach((user) => { %>
+        <tr>
+          <td><%= user.id %></td>
+          <td><%= user.name || '-' %></td>
+          <td><%= user.email || '-' %></td>
+          <td><%= user.roles || '-' %></td>
+          <td>
+            <div class="fw-action-stack">
+              <a class="fw-btn" href="/admin/users/<%= user.id %>/edit">Edit</a>
+              <a class="fw-btn primary" href="/admin/users/<%= user.id %>/reset-password">Reset Password</a>
+            </div>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('../partials/footer') %>

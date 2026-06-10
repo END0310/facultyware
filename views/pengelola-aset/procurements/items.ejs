@@ -1,0 +1,86 @@
+<%- include('../partials/header', { title, flash }) %>
+<div class="fw-card">
+  <h1 class="fw-title">Data Barang Pengadaan</h1>
+  <p class="fw-subtitle">Daftar item pengadaan diambil langsung dari API agar Pengelola Aset dapat memantau barang per permohonan.</p>
+  <div class="fw-form-actions" style="margin-top:0;">
+    <a class="fw-btn" href="/procurements">Kembali ke Permohonan</a>
+    <a class="fw-btn" href="/api/procurement-items" target="_blank" rel="noreferrer">Buka API JSON</a>
+  </div>
+</div>
+<div class="fw-card">
+  <p class="fw-inline-note" id="procurement-items-status" style="margin-top:0;margin-bottom:14px;">Memuat data barang pengadaan...</p>
+  <div style="overflow:auto;">
+    <table class="fw-table">
+      <thead>
+        <tr>
+          <th>No Permohonan</th>
+          <th>Judul Permohonan</th>
+          <th>Nama Barang</th>
+          <th>Spesifikasi</th>
+          <th>Jumlah</th>
+          <th>Estimasi Harga</th>
+          <th>Status</th>
+          <th>Dibuat Oleh</th>
+        </tr>
+      </thead>
+      <tbody id="procurement-items-body">
+        <tr>
+          <td colspan="8">Memuat data...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<script>
+  (function () {
+    const statusEl = document.getElementById('procurement-items-status');
+    const bodyEl = document.getElementById('procurement-items-body');
+
+    function escapeHtml(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatRupiah(value) {
+      return 'Rp ' + Number(value || 0).toLocaleString('id-ID');
+    }
+
+    fetch('/api/procurement-items', { headers: { Accept: 'application/json' } })
+      .then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      })
+      .then(function (payload) {
+        const rows = Array.isArray(payload.data) ? payload.data : [];
+
+        if (!rows.length) {
+          statusEl.textContent = 'Belum ada data barang pengadaan.';
+          bodyEl.innerHTML = '<tr><td colspan="8">Belum ada data barang pengadaan.</td></tr>';
+          return;
+        }
+
+        statusEl.textContent = 'Menampilkan ' + rows.length + ' item barang pengadaan.';
+        bodyEl.innerHTML = rows.map(function (item) {
+          return '<tr>' +
+            '<td>' + escapeHtml(item.request_number || '-') + '</td>' +
+            '<td>' + escapeHtml(item.procurement_title || '-') + '</td>' +
+            '<td>' + escapeHtml(item.name || '-') + '</td>' +
+            '<td>' + escapeHtml(item.specification || '-') + '</td>' +
+            '<td>' + escapeHtml(item.quantity || 0) + '</td>' +
+            '<td>' + escapeHtml(formatRupiah(item.estimated_price)) + '</td>' +
+            '<td><span class="fw-badge ' + escapeHtml(item.procurement_status || '') + '">' + escapeHtml(item.procurement_status || '-') + '</span></td>' +
+            '<td>' + escapeHtml(item.created_by_name || '-') + '</td>' +
+            '</tr>';
+        }).join('');
+      })
+      .catch(function (error) {
+        statusEl.textContent = 'Gagal memuat data barang pengadaan.';
+        bodyEl.innerHTML = '<tr><td colspan="8">Gagal memuat data: ' + escapeHtml(error.message) + '</td></tr>';
+      });
+  })();
+</script>
+<%- include('../partials/footer') %>

@@ -1,0 +1,58 @@
+<%- include('../partials/header', { title, flash }) %>
+<div class="fw-card">
+  <h1 class="fw-title">Dashboard Admin</h1>
+  <p class="fw-subtitle">Panel admin untuk memantau akun, role, dan akses sistem.</p>
+  <div class="fw-form-actions" style="margin-top:0;">
+    <a class="fw-btn primary" href="/admin/users">Buka Manajemen Akun</a>
+  </div>
+</div>
+
+<div class="fw-card">
+  <h2>Ringkasan Sistem</h2>
+  <div class="fw-action-stack">
+    <div class="fw-inline-note"><strong>Total Akun</strong><br><%= totalUsers %></div>
+  </div>
+</div>
+
+<div class="fw-card">
+  <h2>Distribusi Role</h2>
+  <table class="fw-table">
+    <thead>
+      <tr><th>Role</th><th>Total User</th></tr>
+    </thead>
+    <tbody>
+      <% if (!rolesSummary.length) { %>
+        <tr><td colspan="2">Belum ada data role.</td></tr>
+      <% } %>
+      <% rolesSummary.forEach((role) => { %>
+        <tr>
+          <td><%= role.name %></td>
+          <td><%= role.total %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<div class="fw-card">
+  <h2>Akun Terbaru</h2>
+  <table class="fw-table">
+    <thead>
+      <tr><th>ID</th><th>Nama</th><th>Email</th><th>Role</th></tr>
+    </thead>
+    <tbody>
+      <% if (!recentUsers.length) { %>
+        <tr><td colspan="4">Belum ada akun.</td></tr>
+      <% } %>
+      <% recentUsers.forEach((user) => { %>
+        <tr>
+          <td><%= user.id %></td>
+          <td><%= user.name || '-' %></td>
+          <td><%= user.email || '-' %></td>
+          <td><%= user.roles || '-' %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('../partials/footer') %>

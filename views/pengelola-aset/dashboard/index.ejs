@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <%- include('../../partials/theme_head') %>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= title || 'Dashboard Pengelola Aset' %></title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <%- include('../partials/styles') %>
+  </head>
+  <body>
+    <div class="proc-shell">
+      <%- include('../partials/sidebar', { user, roles }) %>
+      <main class="proc-main">
+        <%
+          const requestMax = Math.max(summary.requests.pending, summary.requests.approved, summary.requests.rejected, 1);
+          const procurementMax = Math.max(summary.procurements.draft, summary.procurements.submitted, summary.procurements.approved, summary.procurements.completed, 1);
+          const donutTotal = Math.max(summary.procurements.approved + summary.procurements.submitted + summary.procurements.completed, 1);
+          const donutCircumference = 2 * Math.PI * 54;
+          const donutApproved = (summary.procurements.approved / donutTotal) * donutCircumference;
+          const donutSubmitted = (summary.procurements.submitted / donutTotal) * donutCircumference;
+          const donutCompleted = (summary.procurements.completed / donutTotal) * donutCircumference;
+        %>
+
+        <div class="dashboard-stack">
+          <section class="dashboard-top">
+            <section class="proc-hero hero-panel">
+              <div class="hero-grid">
+                <div>
+                  <p class="proc-eyebrow">Modul Pengadaan Barang</p>
+                  <h1>Dashboard Pengelola Aset</h1>
+                  <p>Kelola usulan, permohonan, dan pencatatan aset dari satu dashboard dengan ringkasan data yang cepat dibaca.</p>
+                  <div class="proc-actions">
+                    <a class="fw-btn primary" href="/procurements/requests">Lihat Usulan</a>
+                    <a class="fw-btn" href="/procurements/create">Buat Permohonan</a>
+                    <a class="fw-btn" href="/procurements/report">Buka Rekap</a>
+                  </div>
+                </div>
+                <div class="hero-kpis">
+                  <div class="hero-kpi">
+                    <div class="hero-kpi-label">Total Usulan</div>
+                    <div class="hero-kpi-value"><%= summary.requests.total %></div>
+                    <div class="hero-kpi-meta">Pending <%= summary.requests.pending %> item</div>
+                  </div>
+                  <div class="hero-kpi">
+                    <div class="hero-kpi-label">Permohonan Aktif</div>
+                    <div class="hero-kpi-value"><%= summary.procurements.total %></div>
+                    <div class="hero-kpi-meta">Submitted <%= summary.procurements.submitted %> item</div>
+                  </div>
+                  <div class="hero-kpi">
+                    <div class="hero-kpi-label">Approved</div>
+                    <div class="hero-kpi-value"><%= summary.procurements.approved %></div>
+                    <div class="hero-kpi-meta">Completed <%= summary.procurements.completed %> item</div>
+                  </div>
+                  <div class="hero-kpi">
+                    <div class="hero-kpi-label">Nilai Aset</div>
+                    <div class="hero-kpi-value">Rp <%= Number(summary.assets.totalCost || 0).toLocaleString('id-ID') %></div>
+                    <div class="hero-kpi-meta"><%= summary.assets.total %> aset tercatat</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <aside class="fw-card spotlight-panel">
+              <div>
+                <div class="spotlight-label">Quick Insight</div>
+                <div class="spotlight-value"><%= summary.procurements.completed %></div>
+                <p class="spotlight-copy">Permohonan sudah selesai dan berhasil masuk ke pencatatan aset. Gunakan panel ini untuk melihat fokus kerja tercepat hari ini.</p>
+              </div>
+              <div class="mini-list">
+                <div class="mini-list-item">
+                  <span class="mini-list-dot pending"></span>
+                  <span class="mini-list-label">Usulan menunggu tindak lanjut</span>
+                  <span class="mini-list-value"><%= summary.requests.pending %></span>
+                </div>
+                <div class="mini-list-item">
+                  <span class="mini-list-dot submitted"></span>
+                  <span class="mini-list-label">Permohonan menunggu persetujuan</span>
+                  <span class="mini-list-value"><%= summary.procurements.submitted %></span>
+                </div>
+                <div class="mini-list-item">
+                  <span class="mini-list-dot completed"></span>
+                  <span class="mini-list-label">Aset siap dilacak di sistem</span>
+                  <span class="mini-list-value"><%= summary.assets.total %></span>
+                </div>
+              </div>
+            </aside>
+          </section>
+
+          <section class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-label">Total Usulan</div>
+              <div class="stat-value"><%= summary.requests.total %></div>
+              <div class="status-row">
+                <span class="fw-badge pending">Pending: <%= summary.requests.pending %></span>
+                <span class="fw-badge approved">Approved: <%= summary.requests.approved %></span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total Permohonan</div>
+              <div class="stat-value"><%= summary.procurements.total %></div>
+              <div class="status-row">
+                <span class="fw-badge draft">Draft: <%= summary.procurements.draft %></span>
+                <span class="fw-badge submitted">Submitted: <%= summary.procurements.submitted %></span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Permohonan Disetujui</div>
+              <div class="stat-value"><%= summary.procurements.approved %></div>
+              <div class="status-row">
+                <span class="fw-badge completed">Completed: <%= summary.procurements.completed %></span>
+                <span class="fw-badge rejected">Rejected: <%= summary.procurements.rejected %></span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Aset dari Pengadaan</div>
+              <div class="stat-value"><%= summary.assets.total %></div>
+              <div class="status-row">
+                <span class="fw-badge">Rp <%= Number(summary.assets.totalCost || 0).toLocaleString('id-ID') %></span>
+              </div>
+            </div>
+          </section>
+
+          <section class="chart-grid">
+            <div class="fw-card chart-card">
+              <div class="chart-head">
+                <div>
+                  <h2>Grafik Status Usulan</h2>
+                  <p class="fw-subtitle">Distribusi usulan terbaru berdasarkan status proses.</p>
+                </div>
+                <div>
+                  <div class="chart-meta">Total</div>
+                  <div class="chart-total"><%= summary.requests.total %></div>
+                </div>
+              </div>
+              <div class="bar-chart">
+                <div class="bar-row">
+                  <div class="bar-label">Pending</div>
+                  <div class="bar-track"><div class="bar-fill pending" style="width:<%= (summary.requests.pending / requestMax) * 100 %>%"></div></div>
+                  <div class="bar-value"><%= summary.requests.pending %></div>
+                </div>
+                <div class="bar-row">
+                  <div class="bar-label">Approved</div>
+                  <div class="bar-track"><div class="bar-fill approved" style="width:<%= (summary.requests.approved / requestMax) * 100 %>%"></div></div>
+                  <div class="bar-value"><%= summary.requests.approved %></div>
+                </div>
+                <div class="bar-row">
+                  <div class="bar-label">Rejected</div>
+                  <div class="bar-track"><div class="bar-fill rejected" style="width:<%= (summary.requests.rejected / requestMax) * 100 %>%"></div></div>
+                  <div class="bar-value"><%= summary.requests.rejected %></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fw-card chart-card">
+              <div class="chart-head">
+                <div>
+                  <h2>Grafik Permohonan</h2>
+                  <p class="fw-subtitle">Ringkasan pipeline permohonan yang sedang berjalan.</p>
+                </div>
+                <div>
+                  <div class="chart-meta">Aktif</div>
+                  <div class="chart-total"><%= summary.procurements.total %></div>
+                </div>
+              </div>
+              <div class="bar-chart">
+                <div class="bar-row">
+                  <div class="bar-label">Draft</div>
+                  <div class="bar-track"><div class="bar-fill draft" style="width:<%= (summary.procurements.draft / procurementMax) * 100 %>%"></div></div>
+                  <div class="bar-value"><%= summary.procurements.draft %></div>
+                </div>
+                <div class="bar-row">
+                  <div class="bar-label">Submitted</div>
+                  <div class="bar-track"><div class="bar-fill submitted" style="width:<%= (summary.procurements.submitted / procurementMax) * 100 %>%"></div></div>
+                  <div class="bar-value"><%= summary.procurements.submitted %></div>
+                </div>
+                <div class="bar-row">
+                  <div class="bar-label">Approved</div>
+                  <div class="bar-track"><div class="bar-fill approved" style="width:<%= (summary.procurements.approved / procurementMax) * 100 %>%"></div></div>
+                  <div class="bar-value"><%= summary.procurements.approved %></div>
+                </div>
+                <div class="bar-row">
+                  <div class="bar-label">Completed</div>
+                  <div class="bar-track"><div class="bar-fill completed" style="width:<%= (summary.procurements.completed / procurementMax) * 100 %>%"></div></div>
+                  <div class="bar-value"><%= summary.procurements.completed %></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="data-grid">
+            <div class="data-stack">
+              <div class="fw-card">
+                <h2>Permohonan Pengadaan Terbaru</h2>
+                <p class="fw-subtitle">Pantau status permohonan yang sedang berjalan.</p>
+                <table class="fw-table">
+                  <thead>
+                    <tr>
+                      <th>No</th>
+                      <th>Judul</th>
+                      <th>Status</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (summary.recentProcurements.length) { %>
+                      <% summary.recentProcurements.forEach((item) => { %>
+                        <tr>
+                          <td><%= item.request_number %></td>
+                          <td><%= item.title %></td>
+                          <td><span class="fw-badge <%= item.status %>"><%= item.status %></span></td>
+                          <td><a class="fw-btn" href="/procurements/<%= item.id %>">Detail</a></td>
+                        </tr>
+                      <% }) %>
+                    <% } else { %>
+                      <tr><td colspan="4">Belum ada data permohonan.</td></tr>
+                    <% } %>
+                  </tbody>
+                </table>
+              </div>
+              <div class="fw-card">
+                <h2>Usulan Pengadaan Terbaru</h2>
+                <p class="fw-subtitle">Data usulan yang masuk dari Ketua Departemen.</p>
+                <table class="fw-table">
+                  <thead>
+                    <tr>
+                      <th>No Usulan</th>
+                      <th>Nama Barang</th>
+                      <th>Jumlah</th>
+                      <th>Status</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (summary.recentRequests.length) { %>
+                      <% summary.recentRequests.forEach((item) => { %>
+                        <tr>
+                          <td><%= item.request_number %></td>
+                          <td><%= item.name %></td>
+                          <td><%= item.quantity %></td>
+                          <td><span class="fw-badge <%= item.status %>"><%= item.status %></span></td>
+                          <td><a class="fw-btn" href="/procurements/requests/<%= item.id %>">Detail</a></td>
+                        </tr>
+                      <% }) %>
+                    <% } else { %>
+                      <tr><td colspan="5">Belum ada data usulan.</td></tr>
+                    <% } %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="fw-card">
+              <h2>Komposisi Permohonan</h2>
+              <p class="fw-subtitle">Visual cepat untuk melihat proporsi permohonan yang disubmit, disetujui, dan selesai.</p>
+              <div class="donut-layout">
+                <div class="donut-chart" aria-hidden="true">
+                  <svg viewBox="0 0 140 140">
+                    <circle class="donut-track" cx="70" cy="70" r="54"></circle>
+                    <circle class="donut-segment approved" cx="70" cy="70" r="54" stroke-dasharray="<%= donutApproved %> <%= donutCircumference - donutApproved %>" stroke-dashoffset="0"></circle>
+                    <circle class="donut-segment submitted" cx="70" cy="70" r="54" stroke-dasharray="<%= donutSubmitted %> <%= donutCircumference - donutSubmitted %>" stroke-dashoffset="<%= -donutApproved %>"></circle>
+                    <circle class="donut-segment completed" cx="70" cy="70" r="54" stroke-dasharray="<%= donutCompleted %> <%= donutCircumference - donutCompleted %>" stroke-dashoffset="<%= -(donutApproved + donutSubmitted) %>"></circle>
+                  </svg>
+                  <div class="donut-center">
+                    <div>
+                      <strong><%= summary.procurements.total %></strong>
+                      <span>Total permohonan</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="donut-legend">
+                  <div class="donut-legend-item">
+                    <span class="donut-legend-dot submitted"></span>
+                    <span class="donut-legend-label">Submitted</span>
+                    <span class="donut-legend-value"><%= summary.procurements.submitted %></span>
+                  </div>
+                  <div class="donut-legend-item">
+                    <span class="donut-legend-dot approved"></span>
+                    <span class="donut-legend-label">Approved</span>
+                    <span class="donut-legend-value"><%= summary.procurements.approved %></span>
+                  </div>
+                  <div class="donut-legend-item">
+                    <span class="donut-legend-dot completed"></span>
+                    <span class="donut-legend-label">Completed</span>
+                    <span class="donut-legend-value"><%= summary.procurements.completed %></span>
+                  </div>
+                  <div class="donut-legend-item">
+                    <span class="donut-legend-dot" style="background:#ef4444"></span>
+                    <span class="donut-legend-label">Rejected</span>
+                    <span class="donut-legend-value"><%= summary.procurements.rejected %></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="/assets/js/basecoat.js" defer></script>
+    <%- include('../partials/scripts') %>
+  </body>
+</html>

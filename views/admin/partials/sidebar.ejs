@@ -1,0 +1,48 @@
+<% const sidebarUser = user || {}; const sidebarRoles = roles || sidebarUser.roles || []; %>
+<aside id="admin-sidebar" class="admin-sidebar">
+  <a href="/admin" class="admin-brand">
+    <div class="admin-brand-icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>
+    </div>
+    <div>
+      <div class="admin-brand-title">Facultyware</div>
+      <div class="admin-brand-subtitle">Panel Admin</div>
+    </div>
+  </a>
+
+  <nav aria-label="Menu Admin Akun">
+    <div class="admin-nav-title">Menu Admin</div>
+    <div class="admin-menu">
+      <a class="admin-link" href="/admin">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
+        <span>Dashboard Admin</span>
+      </a>
+      <a class="admin-link" href="/admin/users">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Manajemen Akun</span>
+      </a>
+      <a class="admin-link" href="/home">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
+        <span>Kembali ke Home</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="admin-sidebar-footer">
+    <button class="theme-toggle" type="button" data-theme-toggle>
+      <svg class="theme-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+      <span data-theme-label>Mode Tampilan</span>
+    </button>
+
+    <div class="admin-user">
+      <div class="admin-user-name"><%= sidebarUser.name || 'Admin' %></div>
+      <div class="admin-user-email"><%= sidebarUser.email || '-' %></div>
+      <div class="admin-user-role"><%= (sidebarRoles && sidebarRoles.length ? sidebarRoles.join(', ') : 'Role belum terbaca') %></div>
+    </div>
+
+    <a class="logout-link" href="/logout">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      <span>Logout</span>
+    </a>
+  </div>
+</aside>
