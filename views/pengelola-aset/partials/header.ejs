@@ -1,18 +1,180 @@
 <!doctype html>
 <html lang="id">
-<head>
-  <%- include('../../partials/theme_head') %>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><%= title || 'Facultyware' %></title>
-  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
-  <link rel="stylesheet" href="/assets/styles.css">
-  <%- include('styles') %>
-</head>
-<body>
-<div class="proc-shell">
-  <%- include('sidebar', { user: currentUser || null, roles: currentUser?.roles || [] }) %>
-  <main class="proc-main">
-    <% if (flash) { %>
-      <div class="fw-flash <%= flash.type %>"><%= flash.message %></div>
-    <% } %>
+  <head>
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem("themeMode");
+          if (stored ? stored === "dark" : matchMedia("(prefers-color-scheme: dark)").matches) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+        document.addEventListener("basecoat:theme", (e) => {
+          const mode = e.detail?.mode;
+          const dark = mode === "dark" ? true : mode === "light" ? false : !document.documentElement.classList.contains("dark");
+          document.documentElement.classList.toggle("dark", dark);
+          try { localStorage.setItem("themeMode", dark ? "dark" : "light"); } catch (_) {}
+        });
+      })();
+    </script>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= title || 'Pengelola Aset' %> — Facultyware</title>
+
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+
+    <script src="/assets/js/basecoat.js?v=0.3.11" defer></script>
+    <script src="/assets/js/sidebar.js?v=0.3.11" defer></script>
+  </head>
+
+  <body>
+    <script>
+      (() => {
+        document.addEventListener("DOMContentLoaded", () => {
+          const sidebar = document.getElementById("sidebar");
+          if (!sidebar) return;
+          const updateCurrentLinks = () => {
+            const currentPath = window.location.pathname.replace(/\/$/, "");
+            sidebar.querySelectorAll("a").forEach((item) => {
+              const href = item.getAttribute("href");
+              if (!href) return;
+              try {
+                const url = new URL(href, window.location.origin);
+                const itemPath = url.pathname.replace(/\/$/, "") || "/";
+                const isCurrent = itemPath === "/procurements"
+                  ? currentPath === "/procurements" || /^\/procurements\/\d+/.test(currentPath)
+                  : currentPath === itemPath || (itemPath !== "/" && itemPath !== "/home" && currentPath.startsWith(itemPath + "/"));
+                if (isCurrent) {
+                  item.setAttribute("aria-current", "page");
+                } else {
+                  item.removeAttribute("aria-current");
+                }
+              } catch (_) {}
+            });
+          };
+          updateCurrentLinks();
+        });
+      })();
+    </script>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar" data-side="left" aria-hidden="false">
+      <nav aria-label="Sidebar navigation">
+        <header>
+          <a href="/procurements/dashboard" class="btn-ghost p-2 h-12 w-full justify-start">
+            <div class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
+            <div class="grid flex-1 text-left text-sm leading-tight ml-2">
+              <span class="truncate font-medium">Facultyware</span>
+              <span class="truncate text-xs text-foreground">Pengelola Aset</span>
+            </div>
+          </a>
+        </header>
+
+        <div class="scrollbar p-2 flex-1 overflow-y-auto">
+          <div role="group" aria-labelledby="group-procurement">
+            <h3 id="group-procurement" class="px-2 py-1 text-xs font-semibold text-foreground uppercase tracking-wider">Manajemen Pengadaan</h3>
+            <ul class="mt-1 space-y-0.5">
+              <li>
+                <a href="/procurements/dashboard" class="btn-ghost w-full justify-start">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="12 3 20 7.5 20 16.5 12 21 4 16.5 4 7.5 12 3"/><polyline points="12 12 20 7.5"/><polyline points="12 12 12 21"/><polyline points="12 12 4 7.5"/></svg>
+                  Dashboard
+                </a>
+              </li>
+              <li>
+                <a href="/procurements" class="btn-ghost w-full justify-start">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  Daftar Permohonan
+                </a>
+              </li>
+              <li>
+                <a href="/procurements/requests" class="btn-ghost w-full justify-start">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 16c0 .5-.37 1-1.236 1.623C19.834 18.128 18.463 18.6 17 18.6c-.5 0-.972.066-1.423.184"/><circle cx="17" cy="11" r="3"/></svg>
+                  Daftar Usulan
+                </a>
+              </li>
+              <li>
+                <a href="/procurements/items" class="btn-ghost w-full justify-start">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                  Data Barang
+                </a>
+              </li>
+              <li>
+                <a href="/procurements/report" class="btn-ghost w-full justify-start">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+                  Laporan
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- User footer -->
+        <footer class="p-2 border-t border-sidebar-border">
+          <div class="flex items-center gap-2 rounded-md px-2 py-1.5">
+            <div class="flex aspect-square size-8 items-center justify-center rounded-full bg-muted text-sm font-medium">
+              <%= locals.user && locals.user.name ? locals.user.name.charAt(0).toUpperCase() : 'P' %>
+            </div>
+            <div class="grid flex-1 text-left text-sm leading-tight">
+              <span class="truncate font-medium"><%= locals.user ? locals.user.name : 'Pengelola Aset' %></span>
+              <span class="truncate text-xs text-foreground">Pengelola Aset</span>
+            </div>
+            <a href="/logout" class="btn-sm-icon-outline" data-tooltip="Keluar" data-side="top" aria-label="Keluar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </a>
+          </div>
+        </footer>
+      </nav>
+    </aside>
+
+    <!-- Main content -->
+    <main id="content">
+      <!-- Top header bar -->
+      <header class="bg-background sticky inset-x-0 top-0 isolate flex shrink-0 items-center gap-2 border-b z-10">
+        <div class="flex h-14 w-full items-center gap-2 px-4">
+          <button
+            type="button"
+            onclick="document.dispatchEvent(new CustomEvent('basecoat:sidebar'))"
+            aria-label="Toggle sidebar"
+            data-tooltip="Toggle sidebar"
+            data-side="bottom"
+            data-align="start"
+            class="btn-sm-icon-outline mr-auto size-7 -ml-1.5"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2"/>
+              <path d="M9 3v18"/>
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            aria-label="Toggle dark mode"
+            data-tooltip="Toggle dark mode"
+            data-side="bottom"
+            onclick="document.dispatchEvent(new CustomEvent('basecoat:theme'))"
+            class="btn-icon-outline size-8"
+          >
+            <span class="hidden dark:block">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2m-7.07-14.07 1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2m-4.93 7.07-1.41-1.41M6.34 6.34 4.93 4.93"/></svg>
+            </span>
+            <span class="block dark:hidden">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            </span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Page content -->
+      <div class="p-4 md:p-6 xl:p-8">
+        <div class="max-w-screen-2xl mx-auto">
+          <% if (flash) { %>
+            <div class="mb-4 p-3 rounded-md text-sm font-medium <%= flash.type === 'success' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200' %>">
+              <%= flash.message %>
+            </div>
+          <% } %>

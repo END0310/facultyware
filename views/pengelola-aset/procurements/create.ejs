@@ -1,50 +1,46 @@
 <%- include('../partials/header', { title, flash }) %>
-<div class="fw-card">
-  <h1 class="fw-title">Buat Permohonan Pengadaan</h1>
-  <p class="fw-subtitle">Permohonan dibuat oleh Pengelola Aset dan disubmit ke Wakil Dekan.</p>
-</div>
-<form class="fw-card fw-form-card" method="post" action="/procurements">
-  <div class="fw-form-header">
-    <h2 class="fw-form-title">Form Permohonan Pengadaan</h2>
-    <p class="fw-form-copy">Isi data pengadaan dengan jelas agar draft mudah ditinjau sebelum disubmit ke Wakil Dekan.</p>
+
+<section class="card p-6 mb-6">
+  <h1 class="text-3xl font-bold tracking-tight">Buat Permohonan Pengadaan</h1>
+  <p class="mt-2 text-foreground">Permohonan dibuat oleh Pengelola Aset dan disubmit ke Wakil Dekan.</p>
+</section>
+
+<form class="card p-6 form" method="post" action="/procurements">
+  <div class="mb-6 border-b pb-4">
+    <h2 class="text-lg font-semibold">Form Permohonan Pengadaan</h2>
+    <p class="mt-1 text-sm text-foreground">Isi data pengadaan dengan jelas agar draft mudah ditinjau sebelum disubmit.</p>
   </div>
 
-  <div class="fw-form-section">
-    <h3 class="fw-section-title">Informasi Utama</h3>
-    <p class="fw-section-copy">Bagian ini menjelaskan identitas permohonan dan barang yang diajukan.</p>
-    <div class="fw-grid">
-      <div class="fw-field">
-        <label>Judul Permohonan</label>
-        <input name="title" required placeholder="Contoh: Pengadaan Laptop Laboratorium 2026" value="<%= sourceRequest ? 'Permohonan Pengadaan ' + sourceRequest.name + ' dari usulan ' + sourceRequest.request_number : '' %>">
-        <p class="fw-field-tip">Gunakan judul yang mudah dikenali oleh reviewer.</p>
-      </div>
-      <div class="fw-field">
-        <label>Nama Barang</label>
-        <input name="name" required placeholder="Contoh: Laptop Laboratorium" value="<%= sourceRequest ? sourceRequest.name : '' %>">
-      </div>
-      <div class="fw-field">
-        <label>Jumlah</label>
-        <input name="quantity" type="number" min="1" required value="<%= sourceRequest ? sourceRequest.quantity : 1 %>">
-      </div>
-      <div class="fw-field">
-        <label>Estimasi Harga</label>
-        <input name="estimated_price" type="number" min="0" step="0.01" placeholder="Contoh: 8500000" value="0">
-        <p class="fw-field-tip">Masukkan estimasi per item atau total sesuai kebijakan internal yang dipakai.</p>
-      </div>
+  <div class="grid gap-4 lg:grid-cols-2">
+    <div class="field">
+      <label>Judul Permohonan</label>
+      <input name="title" type="text" required placeholder="Contoh: Pengadaan Laptop Laboratorium 2026" value="<%= sourceRequest ? 'Permohonan Pengadaan ' + sourceRequest.name + ' dari usulan ' + sourceRequest.request_number : '' %>">
+      <small>Gunakan judul yang mudah dikenali oleh reviewer.</small>
+    </div>
+    <div class="field">
+      <label>Nama Barang</label>
+      <input name="name" type="text" required placeholder="Contoh: Laptop Laboratorium" value="<%= sourceRequest ? sourceRequest.name : '' %>">
+    </div>
+    <div class="field">
+      <label>Jumlah</label>
+      <input name="quantity" type="number" min="1" required value="<%= sourceRequest ? sourceRequest.quantity : 1 %>">
+    </div>
+    <div class="field">
+      <label>Estimasi Harga</label>
+      <input name="estimated_price" type="number" min="0" step="0.01" placeholder="Contoh: 8500000" value="0">
+      <small>Masukkan estimasi per item atau total sesuai kebijakan internal.</small>
     </div>
   </div>
 
-  <div class="fw-form-section">
-    <h3 class="fw-section-title">Spesifikasi Barang</h3>
-    <p class="fw-section-copy">Tambahkan detail teknis agar proses pembelian lebih akurat.</p>
-    <div class="fw-field">
-      <label>Spesifikasi</label>
-      <textarea name="specification" rows="5" placeholder="Contoh: Core i5 atau Ryzen 5, RAM 16 GB, SSD 512 GB"><%= sourceRequest ? (sourceRequest.specification || '') : '' %></textarea>
-    </div>
+  <div class="field mt-4">
+    <label>Spesifikasi</label>
+    <textarea name="specification" rows="5" placeholder="Contoh: Core i5 atau Ryzen 5, RAM 16 GB, SSD 512 GB"><%= sourceRequest ? (sourceRequest.specification || '') : '' %></textarea>
   </div>
 
-  <div class="fw-form-actions">
-    <button class="fw-btn primary" type="submit">Simpan Draft Permohonan</button>
+  <div class="mt-6 flex gap-2 flex-wrap">
+    <button class="btn-primary" type="submit">Simpan Draft Permohonan</button>
+    <a class="btn-outline" href="/procurements">Batal</a>
   </div>
 </form>
+
 <%- include('../partials/footer') %>

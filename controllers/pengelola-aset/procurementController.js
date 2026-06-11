@@ -267,7 +267,7 @@ const decideProcurement = async (req, res, next) => {
       req,
       'success',
       decision === 'approved'
-        ? `Permohonan berhasil di-approve dan ${result.assetSummary.createdCount} aset otomatis ditambahkan.`
+        ? 'Permohonan berhasil di-approve. Pengelola Aset dapat mencatat barang ke daftar aset.'
         : 'Permohonan berhasil di-reject.'
     );
     res.redirect(`/procurements/${req.params.id}`);
@@ -285,10 +285,6 @@ const showAddAsset = async (req, res, next) => {
     if (!procurement) return res.status(404).render('error', { message: 'Permohonan tidak ditemukan', error: { status: 404, stack: '' } });
     if (procurement.status !== 'approved') {
       flash(req, 'error', 'Barang hanya bisa ditambahkan jika permohonan sudah approved.');
-      return res.redirect(`/procurements/${req.params.id}`);
-    }
-    if (Number(procurement.asset_count || 0) > 0) {
-      flash(req, 'error', 'Permohonan ini sudah otomatis tercatat ke list asset.');
       return res.redirect(`/procurements/${req.params.id}`);
     }
     const items = await getProcurementItems(req.params.id);
@@ -346,17 +342,6 @@ const addAssetFromProcurement = async (req, res, next) => {
     const [procRows] = await conn.query('SELECT * FROM equipment_procurements WHERE id = ? FOR UPDATE', [req.params.id]);
     const procurement = procRows[0];
     if (!procurement || procurement.status !== 'approved') throw new Error('Permohonan belum approved atau tidak ditemukan.');
-    const [existingAssets] = await conn.query(`
-      SELECT COUNT(*) AS total
-      FROM assets
-      WHERE acquisition_type = 'procurement' AND asset_grant_id = ?
-    `, [req.params.id]);
-    if (Number(existingAssets[0]?.total || 0) > 0) {
-      await conn.rollback();
-      flash(req, 'error', 'Permohonan ini sudah tercatat ke list asset.');
-      return res.redirect(`/procurements/${req.params.id}`);
-    }
-
     const items = await getProcurementItems(req.params.id);
     const selectedItem = items.find((item) => Number(item.id) === selectedItemId) || items[0] || null;
 
@@ -384,14 +369,20 @@ const addAssetFromProcurement = async (req, res, next) => {
     const [assetResult] = await conn.query(`
       INSERT INTO assets
       (name, code, type, acquisition_type, acquisition_date, acquisition_cost, asset_grant_id, \`condition\`, status, created_at, updated_at)
-      VALUES (?, ?, 'equipment', 'procurement', ?, ?, ?, 'good', 'available', NOW(), NOW())
-    `, [name, assetCode, acquisitionDate, acquisitionCost, req.params.id]);
+      VALUES (?, ?, 'equipment', 'procurement', ?, ?, NULL, 'good', 'available', NOW(), NOW())
+    `, [name, assetCode, acquisitionDate, acquisitionCost]);
 
     await conn.query(`
       INSERT INTO equipments
       (asset_id, brand, model, serial_number, specification, purchase_link, photo, depreciation_value, useful_life, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NOW(), NOW())
     `, [assetResult.insertId, brand, model, serialNumber, specification]);
+
+    await conn.query(`
+      UPDATE equipment_procurements
+      SET status = 'completed', updated_at = NOW()
+      WHERE id = ?
+    `, [req.params.id]);
 
     await conn.commit();
     flash(

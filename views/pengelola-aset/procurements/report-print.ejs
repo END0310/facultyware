@@ -4,23 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= title %></title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 24px; color: #0f172a; }
-    h1 { margin: 0 0 8px; font-size: 24px; }
-    p { margin: 0 0 6px; }
-    .meta { margin-bottom: 18px; color: #475569; }
-    table { width: 100%; border-collapse: collapse; margin-top: 18px; }
-    th, td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; vertical-align: top; font-size: 13px; }
-    th { background: #f8fafc; }
-    .toolbar { display: flex; gap: 10px; margin: 16px 0 20px; }
-    .toolbar a, .toolbar button { border: 1px solid #cbd5e1; background: #fff; color: #0f172a; padding: 8px 12px; border-radius: 8px; text-decoration: none; cursor: pointer; }
-    @media print {
-      body { margin: 12px; }
-      .toolbar { display: none; }
-    }
-  </style>
+  <link rel="stylesheet" href="/assets/styles.css" />
 </head>
-<body>
+<body class="p-6">
   <%
     const labels = {
       requests: 'Usulan',
@@ -29,54 +15,59 @@
     };
     const reportLabel = labels[reportType] || 'Rekap';
   %>
-  <h1>Cetak Rekap <%= reportLabel %></h1>
-  <div class="meta">
-    <p>Jenis Kegiatan: <strong><%= reportLabel %></strong></p>
-    <p>Status: <strong><%= filters.status || 'Semua' %></strong></p>
-    <p>Periode: <strong><%= filters.start_date || '-' %></strong> s.d. <strong><%= filters.end_date || '-' %></strong></p>
-  </div>
+  <main class="card p-6">
+    <div class="flex items-start justify-between gap-4 flex-wrap mb-6">
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight">Cetak Rekap <%= reportLabel %></h1>
+        <p class="mt-2 text-foreground">Jenis Kegiatan: <strong><%= reportLabel %></strong></p>
+        <p class="text-foreground">Status: <strong><%= filters.status || 'Semua' %></strong></p>
+        <p class="text-foreground">Periode: <strong><%= filters.start_date || '-' %></strong> s.d. <strong><%= filters.end_date || '-' %></strong></p>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <button class="btn-primary" type="button" onclick="window.print()">Cetak Sekarang</button>
+        <a class="btn-outline" href="/procurements/report?report_type=<%= reportType %>&status=<%= filters.status || '' %>&start_date=<%= filters.start_date || '' %>&end_date=<%= filters.end_date || '' %>">Kembali ke Rekap</a>
+      </div>
+    </div>
 
-  <div class="toolbar">
-    <button type="button" onclick="window.print()">Cetak Sekarang</button>
-    <a href="/procurements/report?report_type=<%= reportType %>&status=<%= filters.status || '' %>&start_date=<%= filters.start_date || '' %>&end_date=<%= filters.end_date || '' %>">Kembali ke Rekap</a>
-  </div>
-
-  <% if (reportType === 'requests') { %>
-    <table>
-      <thead><tr><th>No Usulan</th><th>Nama Barang</th><th>Spesifikasi</th><th>Jumlah</th><th>Status</th><th>Created</th><th>Updated</th><th>Pengusul</th></tr></thead>
-      <tbody>
-        <% if (!rows.length) { %><tr><td colspan="8">Data tidak ditemukan.</td></tr><% } %>
-        <% rows.forEach(r => { %>
-          <tr>
-            <td><%= r.request_number %></td><td><%= r.name %></td><td><%= r.specification || '-' %></td><td><%= r.quantity %></td><td><%= r.status %></td><td><%= r.created_at || '-' %></td><td><%= r.updated_at || '-' %></td><td><%= r.employee_name || '-' %></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  <% } else if (reportType === 'assets') { %>
-    <table>
-      <thead><tr><th>Kode Asset</th><th>Nama Asset</th><th>Brand/Model</th><th>Serial Number</th><th>Spesifikasi</th><th>Tanggal Perolehan</th><th>Harga</th><th>Status</th></tr></thead>
-      <tbody>
-        <% if (!rows.length) { %><tr><td colspan="8">Data tidak ditemukan.</td></tr><% } %>
-        <% rows.forEach(r => { %>
-          <tr>
-            <td><%= r.code %></td><td><%= r.name %></td><td><%= [r.brand, r.model].filter(Boolean).join(' / ') || '-' %></td><td><%= r.serial_number || '-' %></td><td><%= r.specification || '-' %></td><td><%= r.acquisition_date || '-' %></td><td>Rp <%= rupiah(r.acquisition_cost) %></td><td><%= r.status || '-' %></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  <% } else { %>
-    <table>
-      <thead><tr><th>No Permohonan</th><th>Judul</th><th>Barang</th><th>Jumlah</th><th>Estimasi</th><th>Status</th><th>Created</th><th>Updated</th><th>Created By</th></tr></thead>
-      <tbody>
-        <% if (!rows.length) { %><tr><td colspan="9">Data tidak ditemukan.</td></tr><% } %>
-        <% rows.forEach(r => { %>
-          <tr>
-            <td><%= r.request_number %></td><td><%= r.title %></td><td><%= r.item_name || '-' %></td><td><%= r.quantity || '-' %></td><td>Rp <%= rupiah(r.estimated_price) %></td><td><%= r.status %></td><td><%= r.created_at || '-' %></td><td><%= r.updated_at || '-' %></td><td><%= r.created_by_name || '-' %></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  <% } %>
+    <div class="overflow-x-auto">
+      <% if (reportType === 'requests') { %>
+        <table class="table">
+          <thead><tr><th>No Usulan</th><th>Nama Barang</th><th>Spesifikasi</th><th>Jumlah</th><th>Status</th><th>Created</th><th>Updated</th><th>Pengusul</th></tr></thead>
+          <tbody>
+            <% if (!rows.length) { %><tr><td colspan="8">Data tidak ditemukan.</td></tr><% } %>
+            <% rows.forEach(r => { %>
+              <tr>
+                <td><%= r.request_number %></td><td><%= r.name %></td><td><%= r.specification || '-' %></td><td><%= r.quantity %></td><td><%= r.status %></td><td><%= r.created_at || '-' %></td><td><%= r.updated_at || '-' %></td><td><%= r.employee_name || '-' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } else if (reportType === 'assets') { %>
+        <table class="table">
+          <thead><tr><th>Kode Asset</th><th>Nama Asset</th><th>Brand/Model</th><th>Serial Number</th><th>Spesifikasi</th><th>Tanggal Perolehan</th><th>Harga</th><th>Status</th></tr></thead>
+          <tbody>
+            <% if (!rows.length) { %><tr><td colspan="8">Data tidak ditemukan.</td></tr><% } %>
+            <% rows.forEach(r => { %>
+              <tr>
+                <td><%= r.code %></td><td><%= r.name %></td><td><%= [r.brand, r.model].filter(Boolean).join(' / ') || '-' %></td><td><%= r.serial_number || '-' %></td><td><%= r.specification || '-' %></td><td><%= r.acquisition_date || '-' %></td><td>Rp <%= rupiah(r.acquisition_cost) %></td><td><%= r.status || '-' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } else { %>
+        <table class="table">
+          <thead><tr><th>No Permohonan</th><th>Judul</th><th>Barang</th><th>Jumlah</th><th>Estimasi</th><th>Status</th><th>Created</th><th>Updated</th><th>Created By</th></tr></thead>
+          <tbody>
+            <% if (!rows.length) { %><tr><td colspan="9">Data tidak ditemukan.</td></tr><% } %>
+            <% rows.forEach(r => { %>
+              <tr>
+                <td><%= r.request_number %></td><td><%= r.title %></td><td><%= r.item_name || '-' %></td><td><%= r.quantity || '-' %></td><td>Rp <%= rupiah(r.estimated_price) %></td><td><%= r.status %></td><td><%= r.created_at || '-' %></td><td><%= r.updated_at || '-' %></td><td><%= r.created_by_name || '-' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+  </main>
 </body>
 </html>
