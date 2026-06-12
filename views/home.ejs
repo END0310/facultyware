@@ -138,7 +138,7 @@
         <!-- Menu navigasi -->
         <section class="scrollbar">
 
-          <!-- Grup: Pengadaan Barang (menu Diva – Ketua Departemen) -->
+          <!-- Grup: Pengadaan Barang (menu – Ketua Departemen) -->
           <div role="group" aria-labelledby="group-label-pengadaan">
             <h3 id="group-label-pengadaan">Pengadaan Barang</h3>
 
@@ -355,103 +355,194 @@
               Berikut ringkasan aktivitas pengadaan barang Anda.
             </p>
           </header>
+          
+          <section class="grid grid-cols-2 gap-4 mb-6">
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-blue-500">
+                    Total Usulan
+                  </p>
 
-          <!-- ── Shortcut cards ── -->
-          <section class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.total %>
+                  </p>
 
-            <!-- Buat usulan baru -->
-            <a href="/usulan/create" class="card group hover:border-primary transition-colors no-underline">
-              <section class="flex items-center gap-4">
-                <div class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="12" y1="18" x2="12" y2="12" />
-                    <line x1="9" y1="15" x2="15" y2="15" />
-                  </svg>
-                </div>
-                <div class="grid gap-0.5">
-                  <p class="font-semibold text-sm">Buat Usulan Baru</p>
-                  <p class="text-xs text-muted-foreground">
-                    Ajukan permintaan pengadaan barang ke departemen
+                  <p class="mt-4 text-sm text-foreground">
+                    Semua usulan yang pernah dibuat
                   </p>
                 </div>
-                <svg class="ml-auto text-muted-foreground group-hover:text-primary transition-colors shrink-0" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </section>
-            </a>
+                
+                <span class="badge-outline">
+                  Total
+                </span>
+              </div>
+            </div>
 
-            <!-- Unduh laporan PDF -->
-            <a href="/usulan/laporan/pdf" class="card group hover:border-primary transition-colors no-underline">
-              <section class="flex items-center gap-4">
-                <div class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="7 10 12 15 17 10" />
-                    <line x1="12" y1="15" x2="12" y2="3" />
-                  </svg>
-                </div>
-                <div class="grid gap-0.5">
-                  <p class="font-semibold text-sm">Unduh Laporan PDF</p>
-                  <p class="text-xs text-muted-foreground">
-                    Generate rekapan semua usulan pengadaan Anda
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-amber-500">
+                    Draft
+                  </p>
+
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.draft %>
+                  </p>
+
+                  <p class="mt-4 text-sm text-foreground">
+                    Belum diajukan
                   </p>
                 </div>
-                <svg class="ml-auto text-muted-foreground group-hover:text-primary transition-colors shrink-0" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </section>
-            </a>
+                
+                <span class="badge-secondary">
+                  Draft
+                </span>
+              </div>
+            </div>
 
-            <!-- Lihat semua usulan -->
-            <a href="/usulan" class="card group hover:border-primary transition-colors no-underline">
-              <section class="flex items-center gap-4">
-                <div class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="8" y1="6" x2="21" y2="6" />
-                    <line x1="8" y1="12" x2="21" y2="12" />
-                    <line x1="8" y1="18" x2="21" y2="18" />
-                    <line x1="3" y1="6" x2="3.01" y2="6" />
-                    <line x1="3" y1="12" x2="3.01" y2="12" />
-                    <line x1="3" y1="18" x2="3.01" y2="18" />
-                  </svg>
-                </div>
-                <div class="grid gap-0.5">
-                  <p class="font-semibold text-sm">Lihat Semua Usulan</p>
-                  <p class="text-xs text-muted-foreground">
-                    Pantau status seluruh usulan yang pernah diajukan
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-blue-500">
+                    Diajukan
+                  </p>
+
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.submitted %>
+                  </p>
+
+                  <p class="mt-4 text-sm text-foreground">
+                    Menunggu persetujuan
                   </p>
                 </div>
-                <svg class="ml-auto text-muted-foreground group-hover:text-primary transition-colors shrink-0" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </section>
-            </a>
 
-            <!-- API JSON -->
-            <a href="/api/procurements" target="_blank" class="card group hover:border-primary transition-colors no-underline">
-              <section class="flex items-center gap-4">
-                <div class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="16 18 22 12 16 6" />
-                    <polyline points="8 6 2 12 8 18" />
-                  </svg>
-                </div>
-                <div class="grid gap-0.5">
-                  <p class="font-semibold text-sm">API Riwayat Usulan</p>
-                  <p class="text-xs text-muted-foreground">
-                    Lihat data usulan dalam format JSON
+                <span class="badge-secondary">
+                  Submitted
+                </span>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-green-500">
+                     Disetujui
+                  </p>
+
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.approved %>
+                  </p>
+
+                  <p class="mt-4 text-sm text-foreground">
+                    Sudah disetujui
                   </p>
                 </div>
-                <svg class="ml-auto text-muted-foreground group-hover:text-primary transition-colors shrink-0" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </section>
-            </a>
 
-          </section>
+                <span class="badge-primary">
+                  Approved
+                </span>
+              </div>
+            </div>
 
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-red-500">
+                    Ditolak
+                  </p>
+
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.rejected %>
+                  </p>
+
+                  <p class="mt-4 text-sm text-foreground">
+                    Tidak disetujui
+                  </p>
+                </div>
+
+                <span class="badge-destructive">
+                  Rejected
+                </span>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-purple-500">
+                    Selesai
+                  </p>
+
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.completed %>
+                  </p>
+
+                  <p class="mt-4 text-sm text-foreground">
+                    Pengadaan selesai
+                  </p>
+              </div>
+
+              <span class="badge-primary">
+                Completed
+              </span>
+            </div>
+          </div>
+
+        </section>
+
+        <section class="grid grid-cols-2 gap-4 mb-6">
+
+          <div class="card p-4">
+            <div class="flex items-start justify-between gap-3">
+
+              <div>
+                <p class="text-sm font-semibold text-blue-500">
+                  Total Item Barang
+                </p>
+
+                <p class="mt-4 text-3xl font-bold">
+                  <%= totalItem %>
+                </p>
+
+                <p class="mt-4 text-sm text-foreground">
+                  Total unit barang yang diajukan
+                </p>
+              </div>
+
+              <span class="badge-outline">
+                Barang
+              </span>
+
+            </div>
+          </div>
+
+          <div class="card p-4">
+            <div class="flex items-start justify-between gap-3">
+
+              <div>
+                <p class="text-sm font-semibold text-green-500">
+                  Total Estimasi Biaya
+                </p>
+
+                <p class="mt-4 text-2xl font-bold">
+                  <%= formatRupiah(totalBiaya) %>
+                </p>
+
+                <p class="mt-4 text-sm text-foreground">
+                  Akumulasi seluruh usulan
+                </p>
+              </div>
+
+              <span class="badge-primary">
+                Anggaran
+              </span>
+
+            </div>
+          </div>
+
+        </section>
+        
           <!-- ── Panduan singkat ── -->
           <div class="card">
             <header>
