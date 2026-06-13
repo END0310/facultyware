@@ -3,6 +3,7 @@ const router = express.Router();
 const { isLogin, isRole } = require('../middlewares/auth');
 const wakildekanController = require('../controllers/wakildekanController');
 
+router.get('/dashboard', isLogin, isRole('wakildekan'), wakildekanController.dashboard);
 router.get('/permohonan', isLogin, isRole('wakildekan'), wakildekanController.listPermohonan);
 router.get('/permohonan/:id', isLogin, isRole('wakildekan'), wakildekanController.detailPermohonan);
 router.post('/permohonan/:id/approve', isLogin, isRole('wakildekan'), wakildekanController.approvePermohonan);

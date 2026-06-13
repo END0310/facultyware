@@ -212,6 +212,53 @@ const getPermohonanAPI = async (req, res) => {
     }
 };
 
+const dashboard = async (req, res) => {
+    try {
+        const statsQuery = `
+            SELECT
+                COUNT(*) AS total,
+                SUM(CASE WHEN status = 'submitted' THEN 1 ELSE 0 END) AS pending,
+                SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) AS approved,
+                SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) AS rejected
+            FROM equipment_procurements
+        `;
+
+        const recentSubmittedQuery = `
+            SELECT ep.id, ep.request_number, ep.title, ep.status, e.name AS created_by_name, ep.created_at
+            FROM equipment_procurements ep
+            JOIN employees e ON ep.created_by = e.id
+            WHERE ep.status = 'submitted'
+            ORDER BY ep.created_at DESC
+            LIMIT 5
+        `;
+
+        const recentDecisionsQuery = `
+            SELECT ep.id, ep.request_number, ep.title, ep.status, e.name AS created_by_name, ep.updated_at
+            FROM equipment_procurements ep
+            JOIN employees e ON ep.created_by = e.id
+            WHERE ep.status IN ('approved', 'rejected')
+            ORDER BY ep.updated_at DESC
+            LIMIT 5
+        `;
+
+        const [[statsRows], [submittedRows], [decisionRows]] = await Promise.all([
+            db.query(statsQuery),
+            db.query(recentSubmittedQuery),
+            db.query(recentDecisionsQuery)
+        ]);
+
+        res.render('wakildekan/dashboard', {
+            stats: statsRows[0],
+            recentSubmitted: submittedRows,
+            recentDecisions: decisionRows,
+            title: 'Dashboard Wakil Dekan'
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server error');
+    }
+};
+
 module.exports = {
     listPermohonan,
     detailPermohonan,
@@ -219,5 +266,6 @@ module.exports = {
     rejectPermohonan,
     riwayatPermohonan,
     downloadPDF,
-    getPermohonanAPI
+    getPermohonanAPI,
+    dashboard
 };

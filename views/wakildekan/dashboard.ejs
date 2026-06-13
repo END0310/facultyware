@@ -59,7 +59,7 @@
     <aside id="sidebar" class="sidebar" data-side="left" aria-hidden="false">
       <nav aria-label="Sidebar navigation">
         <header>
-          <a href="/wakildekan/permohonan" class="btn-ghost p-2 h-12 w-full justify-start">
+          <a href="/wakildekan/dashboard" class="btn-ghost p-2 h-12 w-full justify-start">
             <div class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
@@ -164,82 +164,171 @@
       <div class="p-4 md:p-6 xl:p-8">
         <div class="max-w-screen-lg mx-auto">
 
-          <header class="flex items-center justify-between mb-6">
-            <div>
-              <h1 class="text-2xl font-bold tracking-tight"><%= title %></h1>
-              <p class="text-muted-foreground mt-1">Daftar permohonan pengadaan barang yang perlu diproses.</p>
-            </div>
-            <div class="flex gap-2">
-              <input type="text" id="searchInput" placeholder="Cari nomor atau judul..." class="input h-10 w-64" onkeyup="filterTable()">
-            </div>
+          <!-- Page heading -->
+          <header class="flex flex-col gap-1 mb-8">
+            <h1 class="text-2xl font-bold tracking-tight"><%= title %></h1>
+            <p class="text-muted-foreground">Ringkasan aktivitas permohonan pengadaan barang.</p>
           </header>
 
-          <div class="card">
-            <section class="p-0 overflow-x-auto">
-              <% if (!permohonan || permohonan.length === 0) { %>
-              <div class="empty p-12">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground mx-auto mb-3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                <h3 class="text-sm font-medium text-center">Belum ada permohonan masuk</h3>
-              </div>
-              <% } else { %>
-              <table class="w-full text-sm" id="dataTable">
-                <thead>
-                  <tr class="border-b bg-muted/50">
-                    <th class="px-4 py-3 text-left font-medium text-muted-foreground">No</th>
-                    <th class="px-4 py-3 text-left font-medium text-muted-foreground">Nomor Request</th>
-                    <th class="px-4 py-3 text-left font-medium text-muted-foreground">Judul</th>
-                    <th class="px-4 py-3 text-left font-medium text-muted-foreground">Diajukan Oleh</th>
-                    <th class="px-4 py-3 text-left font-medium text-muted-foreground">Tanggal</th>
-                    <th class="px-4 py-3 text-center font-medium text-muted-foreground">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% permohonan.forEach((item, index) => { %>
-                  <tr class="border-b last:border-0 hover:bg-muted/30 transition-colors data-row">
-                    <td class="px-4 py-3 text-muted-foreground"><%= index + 1 %></td>
-                    <td class="px-4 py-3 font-mono text-xs text-muted-foreground request-col"><%= item.request_number %></td>
-                    <td class="px-4 py-3 font-medium max-w-[200px] title-col"><%= item.title %></td>
-                    <td class="px-4 py-3"><%= item.created_by_name %></td>
-                    <td class="px-4 py-3 text-xs text-muted-foreground">
-                      <%= new Date(item.created_at).toLocaleDateString('id-ID') %>
-                    </td>
-                    <td class="px-4 py-3 text-center">
-                      <a href="/wakildekan/permohonan/<%= item.id %>" class="btn-sm">Lihat Detail</a>
-                    </td>
-                  </tr>
-                  <% }) %>
-                </tbody>
-              </table>
+          <!-- Stat Cards -->
+          <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+
+            <!-- Total -->
+            <div class="card">
+              <section class="flex items-center gap-4">
+                <div class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div class="grid gap-0.5">
+                  <p class="text-xs text-muted-foreground font-medium">Total Permohonan Masuk</p>
+                  <p class="text-2xl font-bold tracking-tight text-blue-500"><%= stats.total || 0 %></p>
+                </div>
+              </section>
+            </div>
+
+            <!-- Pending -->
+            <div class="card">
+              <section class="flex items-center gap-4">
+                <div class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-yellow-500/10 text-yellow-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div class="grid gap-0.5">
+                  <p class="text-xs text-muted-foreground font-medium">Menunggu Keputusan</p>
+                  <p class="text-2xl font-bold tracking-tight text-yellow-500"><%= stats.pending || 0 %></p>
+                </div>
+              </section>
+            </div>
+
+            <!-- Approved -->
+            <div class="card">
+              <section class="flex items-center gap-4">
+                <div class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-green-500/10 text-green-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <div class="grid gap-0.5">
+                  <p class="text-xs text-muted-foreground font-medium">Disetujui</p>
+                  <p class="text-2xl font-bold tracking-tight text-green-500"><%= stats.approved || 0 %></p>
+                </div>
+              </section>
+            </div>
+
+            <!-- Rejected -->
+            <div class="card">
+              <section class="flex items-center gap-4">
+                <div class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                </div>
+                <div class="grid gap-0.5">
+                  <p class="text-xs text-muted-foreground font-medium">Ditolak</p>
+                  <p class="text-2xl font-bold tracking-tight text-red-500"><%= stats.rejected || 0 %></p>
+                </div>
+              </section>
+            </div>
+
+          </section>
+
+          <!-- Two-column tables -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- Recent submitted -->
+            <div class="card">
+              <header>
+                <h2>Permohonan Terbaru Masuk</h2>
+                <p>5 permohonan terbaru yang menunggu keputusan.</p>
+              </header>
+              <section class="p-0 overflow-x-auto">
+                <% if (!recentSubmitted || recentSubmitted.length === 0) { %>
+                <div class="p-8 text-center">
+                  <p class="text-sm text-muted-foreground">Tidak ada permohonan menunggu keputusan</p>
+                </div>
+                <% } else { %>
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="border-b bg-muted/50">
+                      <th class="px-4 py-3 text-left font-medium text-muted-foreground">Nomor Request</th>
+                      <th class="px-4 py-3 text-left font-medium text-muted-foreground">Judul</th>
+                      <th class="px-4 py-3 text-left font-medium text-muted-foreground">Diajukan Oleh</th>
+                      <th class="px-4 py-3 text-left font-medium text-muted-foreground">Tanggal Masuk</th>
+                      <th class="px-4 py-3 text-center font-medium text-muted-foreground">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% recentSubmitted.forEach((item) => { %>
+                    <tr class="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                      <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= item.request_number %></td>
+                      <td class="px-4 py-3 font-medium text-sm max-w-[160px] truncate"><%= item.title %></td>
+                      <td class="px-4 py-3 text-sm"><%= item.created_by_name %></td>
+                      <td class="px-4 py-3 text-xs text-muted-foreground"><%= new Date(item.created_at).toLocaleDateString('id-ID') %></td>
+                      <td class="px-4 py-3 text-center">
+                        <a href="/wakildekan/permohonan/<%= item.id %>" class="btn-sm">Lihat Detail</a>
+                      </td>
+                    </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+                <% } %>
+              </section>
+              <% if (recentSubmitted && recentSubmitted.length > 0) { %>
+              <footer class="border-t">
+                <a href="/wakildekan/permohonan" class="text-sm text-primary hover:underline">Lihat semua permohonan →</a>
+              </footer>
               <% } %>
-            </section>
+            </div>
+
+            <!-- Recent decisions -->
+            <div class="card">
+              <header>
+                <h2>Aktivitas Keputusan Terakhir</h2>
+                <p>5 keputusan terakhir yang telah dibuat.</p>
+              </header>
+              <section class="p-0 overflow-x-auto">
+                <% if (!recentDecisions || recentDecisions.length === 0) { %>
+                <div class="p-8 text-center">
+                  <p class="text-sm text-muted-foreground">Belum ada keputusan yang dibuat</p>
+                </div>
+                <% } else { %>
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="border-b bg-muted/50">
+                      <th class="px-4 py-3 text-left font-medium text-muted-foreground">Nomor Request</th>
+                      <th class="px-4 py-3 text-left font-medium text-muted-foreground">Judul</th>
+                      <th class="px-4 py-3 text-left font-medium text-muted-foreground">Diajukan Oleh</th>
+                      <th class="px-4 py-3 text-left font-medium text-muted-foreground">Keputusan</th>
+                      <th class="px-4 py-3 text-left font-medium text-muted-foreground">Tanggal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% recentDecisions.forEach((item) => { %>
+                    <tr class="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                      <td class="px-4 py-3 font-mono text-xs text-muted-foreground"><%= item.request_number %></td>
+                      <td class="px-4 py-3 font-medium text-sm max-w-[160px] truncate"><%= item.title %></td>
+                      <td class="px-4 py-3 text-sm"><%= item.created_by_name %></td>
+                      <td class="px-4 py-3">
+                        <% if (item.status === 'approved') { %>
+                          <span class="badge-default">Disetujui</span>
+                        <% } else { %>
+                          <span class="badge-destructive">Ditolak</span>
+                        <% } %>
+                      </td>
+                      <td class="px-4 py-3 text-xs text-muted-foreground"><%= new Date(item.updated_at).toLocaleDateString('id-ID') %></td>
+                    </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+                <% } %>
+              </section>
+              <% if (recentDecisions && recentDecisions.length > 0) { %>
+              <footer class="border-t">
+                <a href="/wakildekan/riwayat" class="text-sm text-primary hover:underline">Lihat semua riwayat →</a>
+              </footer>
+              <% } %>
+            </div>
+
           </div>
 
         </div>
       </div>
     </main>
 
-    <script>
-      function filterTable() {
-        const input = document.getElementById("searchInput");
-        const filter = input.value.toLowerCase();
-        const rows = document.querySelectorAll("#dataTable tbody tr.data-row");
-
-        rows.forEach(row => {
-          const requestCol = row.querySelector(".request-col");
-          const titleCol = row.querySelector(".title-col");
-          
-          if (requestCol && titleCol) {
-            const reqText = requestCol.textContent || requestCol.innerText;
-            const titleText = titleCol.textContent || titleCol.innerText;
-            
-            if (reqText.toLowerCase().indexOf(filter) > -1 || titleText.toLowerCase().indexOf(filter) > -1) {
-              row.style.display = "";
-            } else {
-              row.style.display = "none";
-            }
-          }
-        });
-      }
-    </script>
   </body>
 </html>
