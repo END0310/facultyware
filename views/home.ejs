@@ -1,1 +1,600 @@
-<%- include('home_default', { title, user }) %>
+<!doctype html>
+<html lang="id">
+  <head>
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem("themeMode");
+          if (
+            stored
+              ? stored === "dark"
+              : matchMedia("(prefers-color-scheme: dark)").matches
+          ) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+
+        const apply = (dark) => {
+          document.documentElement.classList.toggle("dark", dark);
+          try {
+            localStorage.setItem("themeMode", dark ? "dark" : "light");
+          } catch (_) {}
+        };
+
+        document.addEventListener("basecoat:theme", (event) => {
+          const mode = event.detail?.mode;
+          apply(
+            mode === "dark"
+              ? true
+              : mode === "light"
+                ? false
+                : !document.documentElement.classList.contains("dark"),
+          );
+        });
+      })();
+    </script>
+
+    <script>
+      (function () {
+        try {
+          const storedTheme = localStorage.getItem("themeVariant");
+          if (storedTheme)
+            document.documentElement.classList.add(`theme-${storedTheme}`);
+        } catch (event) {
+          console.error("Could not apply theme variant from localStorage", event);
+        }
+      })();
+    </script>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Language" content="id" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Dashboard — Facultyware</title>
+
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/assets/apple-touch-icon.png"
+    />
+
+    <link rel="stylesheet" href="/assets/styles.css" />
+
+    <script src="/assets/js/basecoat.js?v=0.3.11" defer></script>
+    <script src="/assets/js/sidebar.js?v=0.3.11" defer></script>
+    <script src="/assets/js/popover.js?v=0.3.11" defer></script>
+  </head>
+
+  <body>
+    <script>
+      (() => {
+        document.addEventListener("DOMContentLoaded", () => {
+          const sidebar = document.getElementById("sidebar");
+          if (!sidebar) return;
+
+          const updateCurrentLinks = () => {
+            const currentPath = window.location.pathname.replace(/\/$/, "");
+            const currentSearch = window.location.search;
+            const currentKey = `${currentPath}${currentSearch}`;
+
+            sidebar.querySelectorAll("a, button").forEach((item) => {
+              const href = item.getAttribute("href");
+              if (!href) {
+                item.removeAttribute("aria-current");
+                return;
+              }
+              const url = new URL(href, window.location.origin);
+              const itemPath = url.pathname.replace(/\/$/, "");
+              const itemKey = `${itemPath}${url.search}`;
+              if (itemKey === currentKey) {
+                item.setAttribute("aria-current", "page");
+              } else {
+                item.removeAttribute("aria-current");
+              }
+            });
+          };
+
+          document.addEventListener("htmx:afterSettle", updateCurrentLinks);
+          window.addEventListener("popstate", updateCurrentLinks);
+          updateCurrentLinks();
+        });
+      })();
+    </script>
+
+    <!-- ─── Sidebar ──────────────────────────────────────────── -->
+    <aside id="sidebar" class="sidebar" data-side="left" aria-hidden="false">
+      <nav aria-label="Sidebar navigation">
+
+        <!-- Logo / nama aplikasi -->
+        <header>
+          <a href="/home" class="btn-ghost p-2 h-12 w-full justify-start">
+            <div
+              class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
+            >
+              <!-- Ikon gedung/universitas -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+            </div>
+            <div class="grid flex-1 text-left text-sm leading-tight ml-2">
+              <span class="truncate font-medium">Facultyware</span>
+              <span class="truncate text-xs">Sistem Pengadaan</span>
+            </div>
+          </a>
+        </header>
+
+        <!-- Menu navigasi -->
+        <section class="scrollbar">
+
+          <!-- Grup: Pengadaan Barang (menu – Ketua Departemen) -->
+          <div role="group" aria-labelledby="group-label-pengadaan">
+            <h3 id="group-label-pengadaan">Pengadaan Barang</h3>
+
+            <ul>
+              <li>
+                <a href="/home">
+                  <!-- Ikon dashboard -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="7" height="9" x="3" y="3" rx="1" />
+                    <rect width="7" height="5" x="14" y="3" rx="1" />
+                    <rect width="7" height="9" x="14" y="12" rx="1" />
+                    <rect width="7" height="5" x="3" y="16" rx="1" />
+                  </svg>
+                  <span>Dashboard</span>
+                </a>
+              </li>
+
+              <li>
+                <a href="/usulan">
+                  <!-- Ikon daftar dokumen -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                  </svg>
+                  <span>Daftar Usulan</span>
+                </a>
+              </li>
+
+              <li>
+                <a href="/usulan/create">
+                  <!-- Ikon tambah -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  <span>Buat Usulan Baru</span>
+                </a>
+              </li>
+
+              <li>
+                <a href="/usulan/laporan/pdf">
+                  <!-- Ikon unduh -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  <span>Unduh Laporan PDF</span>
+                </a>
+              </li>
+
+              <li>
+                <a href="/api/procurements" target="_blank">
+                  <!-- Ikon API/kode -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="16 18 22 12 16 6" />
+                    <polyline points="8 6 2 12 8 18" />
+                  </svg>
+                  <span>API Riwayat Usulan</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+        </section>
+
+        <!-- Footer sidebar: info user + logout -->
+        <footer>
+          <div id="popover-user" class="popover">
+            <button
+              id="popover-user-trigger"
+              type="button"
+              aria-expanded="false"
+              aria-controls="popover-user-popover"
+              class="btn-ghost p-2 h-12 w-full flex items-center justify-start"
+              data-keep-mobile-sidebar-open=""
+            >
+              <!-- Avatar inisial -->
+              <div class="flex aspect-square size-8 items-center justify-center rounded-full bg-muted text-sm font-medium shrink-0">
+                <%= user ? user.charAt(0).toUpperCase() : 'U' %>
+              </div>
+              <div class="grid flex-1 text-left text-sm leading-tight ml-2">
+                <span class="truncate font-medium"><%= user || 'Pengguna' %></span>
+                <span class="truncate text-xs">Ketua Departemen</span>
+              </div>
+              <!-- Ikon chevron -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m7 15 5 5 5-5" />
+                <path d="m7 9 5-5 5 5" />
+              </svg>
+            </button>
+
+            <!-- Popover akun -->
+            <div
+              id="popover-user-popover"
+              data-popover
+              aria-hidden="true"
+              data-side="top"
+              class="w-[220px]"
+            >
+              <div class="grid gap-3">
+                <header class="grid gap-1">
+                  <p class="font-medium text-sm"><%= user || 'Pengguna' %></p>
+                  <p class="text-xs text-muted-foreground">Ketua Departemen</p>
+                </header>
+                <footer class="grid gap-1.5">
+                  <a href="/logout" class="btn-sm-outline w-full">
+                    <!-- Ikon logout -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                      <polyline points="16 17 21 12 16 7" />
+                      <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    Keluar
+                  </a>
+                </footer>
+              </div>
+            </div>
+          </div>
+        </footer>
+
+      </nav>
+    </aside>
+
+    <!-- ─── Main ─────────────────────────────────────────────── -->
+    <main id="content">
+
+      <!-- Top bar -->
+      <header
+        class="bg-background sticky inset-x-0 top-0 isolate flex shrink-0 items-center gap-2 border-b z-10"
+      >
+        <div class="flex h-14 w-full items-center gap-2 px-4">
+          <!-- Toggle sidebar -->
+          <button
+            type="button"
+            onclick="document.dispatchEvent(new CustomEvent('basecoat:sidebar'))"
+            aria-label="Toggle sidebar"
+            data-tooltip="Toggle sidebar"
+            data-side="bottom"
+            data-align="start"
+            class="btn-sm-icon-ghost mr-auto size-7 -ml-1.5"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2" />
+              <path d="M9 3v18" />
+            </svg>
+          </button>
+
+          <!-- Pilih tema warna -->
+          <select class="select h-8 leading-none" id="theme-select">
+            <option value="">Default</option>
+            <option value="claude">Claude</option>
+            <option value="doom-64">Doom 64</option>
+            <option value="supabase">Supabase</option>
+          </select>
+          <script>
+            (() => {
+              const themeSelect = document.getElementById("theme-select");
+              const storedTheme = localStorage.getItem("themeVariant");
+              if (themeSelect && storedTheme) themeSelect.value = storedTheme;
+              themeSelect.addEventListener("change", () => {
+                const newTheme = themeSelect.value;
+                document.documentElement.classList.forEach((c) => {
+                  if (c.startsWith("theme-"))
+                    document.documentElement.classList.remove(c);
+                });
+                if (newTheme) {
+                  document.documentElement.classList.add(`theme-${newTheme}`);
+                  localStorage.setItem("themeVariant", newTheme);
+                } else {
+                  localStorage.removeItem("themeVariant");
+                }
+              });
+            })();
+          </script>
+
+          <!-- Toggle dark mode -->
+          <button
+            type="button"
+            aria-label="Toggle dark mode"
+            data-tooltip="Toggle dark mode"
+            data-side="bottom"
+            onclick="document.dispatchEvent(new CustomEvent('basecoat:theme'))"
+            class="btn-icon-outline size-8"
+          >
+            <span class="hidden dark:block">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2m-7.07-14.07 1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2m-4.93 7.07-1.41-1.41M6.34 6.34 4.93 4.93" />
+              </svg>
+            </span>
+            <span class="block dark:hidden">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+              </svg>
+            </span>
+          </button>
+        </div>
+      </header>
+
+      <!-- ─── Konten halaman ───────────────────────────────── -->
+      <div class="p-4 md:p-6 xl:p-8">
+        <div class="max-w-screen-lg mx-auto">
+
+          <!-- Sapaan -->
+          <header class="flex flex-col gap-1 mb-8">
+            <h1 class="text-2xl font-bold tracking-tight">
+              Selamat datang, <%= user || 'Pengguna' %>
+            </h1>
+            <p class="text-muted-foreground">
+              Berikut ringkasan aktivitas pengadaan barang Anda.
+            </p>
+          </header>
+          
+          <section class="grid grid-cols-2 gap-4 mb-6">
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-blue-500">
+                    Total Usulan
+                  </p>
+
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.total %>
+                  </p>
+
+                  <p class="mt-4 text-sm text-foreground">
+                    Semua usulan yang pernah dibuat
+                  </p>
+                </div>
+                
+                <span class="badge-outline">
+                  Total
+                </span>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-amber-500">
+                    Draft
+                  </p>
+
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.draft %>
+                  </p>
+
+                  <p class="mt-4 text-sm text-foreground">
+                    Belum diajukan
+                  </p>
+                </div>
+                
+                <span class="badge-secondary">
+                  Draft
+                </span>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-blue-500">
+                    Diajukan
+                  </p>
+
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.submitted %>
+                  </p>
+
+                  <p class="mt-4 text-sm text-foreground">
+                    Menunggu persetujuan
+                  </p>
+                </div>
+
+                <span class="badge-secondary">
+                  Submitted
+                </span>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-green-500">
+                     Disetujui
+                  </p>
+
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.approved %>
+                  </p>
+
+                  <p class="mt-4 text-sm text-foreground">
+                    Sudah disetujui
+                  </p>
+                </div>
+
+                <span class="badge-primary">
+                  Approved
+                </span>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-red-500">
+                    Ditolak
+                  </p>
+
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.rejected %>
+                  </p>
+
+                  <p class="mt-4 text-sm text-foreground">
+                    Tidak disetujui
+                  </p>
+                </div>
+
+                <span class="badge-destructive">
+                  Rejected
+                </span>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-purple-500">
+                    Selesai
+                  </p>
+
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.completed %>
+                  </p>
+
+                  <p class="mt-4 text-sm text-foreground">
+                    Pengadaan selesai
+                  </p>
+              </div>
+
+              <span class="badge-primary">
+                Completed
+              </span>
+            </div>
+          </div>
+
+        </section>
+
+        <section class="grid grid-cols-2 gap-4 mb-6">
+
+          <div class="card p-4">
+            <div class="flex items-start justify-between gap-3">
+
+              <div>
+                <p class="text-sm font-semibold text-blue-500">
+                  Total Item Barang
+                </p>
+
+                <p class="mt-4 text-3xl font-bold">
+                  <%= totalItem %>
+                </p>
+
+                <p class="mt-4 text-sm text-foreground">
+                  Total unit barang yang diajukan
+                </p>
+              </div>
+
+              <span class="badge-outline">
+                Barang
+              </span>
+
+            </div>
+          </div>
+
+          <div class="card p-4">
+            <div class="flex items-start justify-between gap-3">
+
+              <div>
+                <p class="text-sm font-semibold text-green-500">
+                  Total Estimasi Biaya
+                </p>
+
+                <p class="mt-4 text-2xl font-bold">
+                  <%= formatRupiah(totalBiaya) %>
+                </p>
+
+                <p class="mt-4 text-sm text-foreground">
+                  Akumulasi seluruh usulan
+                </p>
+              </div>
+
+              <span class="badge-primary">
+                Anggaran
+              </span>
+
+            </div>
+          </div>
+
+        </section>
+        
+          <!-- ── Panduan singkat ── -->
+          <div class="card">
+            <header>
+              <h2>Panduan singkat</h2>
+              <p>Langkah-langkah mengajukan usulan pengadaan barang.</p>
+            </header>
+            <section>
+              <ol class="grid gap-4">
+                <li class="flex items-start gap-3">
+                  <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold mt-0.5">1</span>
+                  <div>
+                    <p class="text-sm font-medium">Buat usulan baru</p>
+                    <p class="text-xs text-muted-foreground mt-0.5">
+                      Klik <strong>Buat Usulan Baru</strong>, isi judul dan daftar barang yang dibutuhkan beserta spesifikasi dan estimasi harga.
+                    </p>
+                  </div>
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold mt-0.5">2</span>
+                  <div>
+                    <p class="text-sm font-medium">Ajukan ke Pengelola Aset</p>
+                    <p class="text-xs text-muted-foreground mt-0.5">
+                      Simpan sebagai <em>draft</em> bila belum siap, atau langsung klik <strong>Ajukan Usulan</strong> untuk mengirim ke Pengelola Aset.
+                    </p>
+                  </div>
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold mt-0.5">3</span>
+                  <div>
+                    <p class="text-sm font-medium">Pantau status usulan</p>
+                    <p class="text-xs text-muted-foreground mt-0.5">
+                      Buka <strong>Daftar Usulan</strong> untuk memantau apakah usulan Anda sudah diproses, disetujui, atau ditolak oleh Wakil Dekan.
+                    </p>
+                  </div>
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold mt-0.5">4</span>
+                  <div>
+                    <p class="text-sm font-medium">Unduh laporan rekapan</p>
+                    <p class="text-xs text-muted-foreground mt-0.5">
+                      Gunakan <strong>Unduh Laporan PDF</strong> kapan saja untuk mendapatkan rekap seluruh riwayat pengajuan Anda dalam format PDF.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+            </section>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <div id="toaster" class="toaster"></div>
+  </body>
+</html>
