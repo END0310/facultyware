@@ -29,7 +29,17 @@
       Buka Rekap
     </a>
   </div>
-  <p class="text-sm text-foreground">Pantau status tiap permohonan dari draft hingga pencatatan aset untuk memastikan alur pengadaan berjalan rapi.</p>
+</div>
+
+<!-- Search bar -->
+<div class="mb-4">
+  <form method="GET" action="/procurements" style="display:flex;gap:8px;align-items:center;">
+    <input type="text" name="search" value="<%= search %>" placeholder="Cari nomor permohonan atau judul..." class="input" style="flex:1;max-width:360px;" />
+    <button type="submit" class="btn-outline">Cari</button>
+    <% if (search) { %>
+    <a href="/procurements" class="btn-ghost text-sm">Reset</a>
+    <% } %>
+  </form>
 </div>
 
 <div class="card overflow-hidden">
@@ -38,8 +48,8 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-3">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
       </svg>
-      <h3 class="text-sm font-medium text-center">Belum ada permohonan</h3>
-      <p class="text-sm text-foreground mt-1">Mulai dengan membuat permohonan pengadaan baru</p>
+      <h3 class="text-sm font-medium text-center"><%= search ? 'Tidak ada hasil untuk "' + search + '"' : 'Belum ada permohonan' %></h3>
+      <p class="text-sm text-foreground mt-1"><%= search ? 'Coba kata kunci lain.' : 'Mulai dengan membuat permohonan pengadaan baru' %></p>
     </div>
   <% } else { %>
     <div class="overflow-x-auto">
@@ -77,6 +87,19 @@
       </table>
     </div>
   <% } %>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-top:1px solid var(--color-border, #e5e7eb);font-size:14px;color:#6b7280;">
+    <span>Menampilkan <strong><%= procurements.length %></strong> dari <strong><%= totalItems %></strong> permohonan</span>
+    <% if (totalPages > 1) { %>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <a href="/procurements?page=<%= Math.max(1, currentPage - 1) %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+         class="btn-sm-outline<%= currentPage <= 1 ? ' pointer-events-none opacity-50' : '' %>">← Prev</a>
+      <span>Hal <strong><%= currentPage %></strong> / <%= totalPages %></span>
+      <a href="/procurements?page=<%= Math.min(totalPages, currentPage + 1) %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+         class="btn-sm-outline<%= currentPage >= totalPages ? ' pointer-events-none opacity-50' : '' %>">Next →</a>
+    </div>
+    <% } %>
+  </div>
 </div>
 
 <%- include('../partials/footer') %>

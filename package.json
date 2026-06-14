@@ -21,7 +21,8 @@
     "pdfkit": "^0.15.2"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "playwright": "^1.60.0"
   },
   "description": "Sistem Informasi Pengadaan Barang - FacultyWare",
   "main": "app.js",

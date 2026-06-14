@@ -169,10 +169,19 @@
               <h1 class="text-2xl font-bold tracking-tight"><%= title %></h1>
               <p class="text-muted-foreground mt-1">Daftar permohonan pengadaan barang yang perlu diproses.</p>
             </div>
-            <div class="flex gap-2">
-              <input type="text" id="searchInput" placeholder="Cari nomor atau judul..." class="input h-10 w-64" onkeyup="filterTable()">
-            </div>
           </header>
+
+          <!-- Search bar -->
+          <form method="GET" action="/wakildekan/permohonan" class="mb-4 flex items-center gap-2">
+            <div class="relative flex-1 max-w-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" name="search" value="<%= search %>" placeholder="Cari nomor atau judul..." class="input h-10 pl-9 w-full" />
+            </div>
+            <button type="submit" class="btn-outline h-10">Cari</button>
+            <% if (search) { %>
+            <a href="/wakildekan/permohonan" class="btn-ghost h-10 text-sm">Reset</a>
+            <% } %>
+          </form>
 
           <div class="card">
             <section class="p-0 overflow-x-auto">
@@ -212,34 +221,30 @@
               </table>
               <% } %>
             </section>
+
+            <footer class="flex items-center justify-between px-4 py-3 border-t text-sm text-muted-foreground">
+              <span>Menampilkan <strong class="text-foreground"><%= permohonan.length %></strong> dari <strong class="text-foreground"><%= totalItems %></strong> permohonan</span>
+              <% if (totalPages > 1) { %>
+              <div class="flex items-center gap-2">
+                <a href="/wakildekan/permohonan?page=<%= Math.max(1, currentPage - 1) %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+                   class="btn-sm-outline <%= currentPage <= 1 ? 'pointer-events-none opacity-50' : '' %>">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  Prev
+                </a>
+                <span class="text-sm tabular-nums">Hal <strong class="text-foreground"><%= currentPage %></strong> / <%= totalPages %></span>
+                <a href="/wakildekan/permohonan?page=<%= Math.min(totalPages, currentPage + 1) %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+                   class="btn-sm-outline <%= currentPage >= totalPages ? 'pointer-events-none opacity-50' : '' %>">
+                  Next
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </a>
+              </div>
+              <% } %>
+            </footer>
           </div>
 
         </div>
       </div>
     </main>
 
-    <script>
-      function filterTable() {
-        const input = document.getElementById("searchInput");
-        const filter = input.value.toLowerCase();
-        const rows = document.querySelectorAll("#dataTable tbody tr.data-row");
-
-        rows.forEach(row => {
-          const requestCol = row.querySelector(".request-col");
-          const titleCol = row.querySelector(".title-col");
-          
-          if (requestCol && titleCol) {
-            const reqText = requestCol.textContent || requestCol.innerText;
-            const titleText = titleCol.textContent || titleCol.innerText;
-            
-            if (reqText.toLowerCase().indexOf(filter) > -1 || titleText.toLowerCase().indexOf(filter) > -1) {
-              row.style.display = "";
-            } else {
-              row.style.display = "none";
-            }
-          }
-        });
-      }
-    </script>
   </body>
 </html>

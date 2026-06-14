@@ -69,7 +69,31 @@ async function getEmployeeId(userId) {
 const index = async (req, res, next) => {
   try {
     const userId = req.session.userId;
+    const search = String(req.query.search || '').trim();
+    const page   = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit  = 10;
+    const offset = (page - 1) * limit;
 
+    let whereClause = 'WHERE ep.created_by = ?';
+    const params = [userId];
+
+    if (search) {
+      whereClause += ' AND (ep.request_number LIKE ? OR ep.title LIKE ?)';
+      const like = `%${search}%`;
+      params.push(like, like);
+    }
+
+    // Count total
+    const [countRows] = await db.query(
+      `SELECT COUNT(DISTINCT ep.id) AS total
+       FROM equipment_procurements ep
+       ${whereClause}`,
+      params
+    );
+    const totalItems = countRows[0].total;
+    const totalPages = Math.max(1, Math.ceil(totalItems / limit));
+
+    // Data with pagination
     const [procurements] = await db.query(
       `SELECT
          ep.id,
@@ -82,10 +106,11 @@ const index = async (req, res, next) => {
          COALESCE(SUM(epi.quantity * epi.estimated_price), 0) AS total_estimasi
        FROM equipment_procurements ep
        LEFT JOIN equipment_proc_items epi ON ep.id = epi.equipment_proc_id
-       WHERE ep.created_by = ?
+       ${whereClause}
        GROUP BY ep.id
-       ORDER BY ep.created_at DESC`,
-      [userId]
+       ORDER BY ep.created_at DESC
+       LIMIT ? OFFSET ?`,
+      [...params, limit, offset]
     );
 
     const successMessage = req.session.successMessage || null;
@@ -101,6 +126,10 @@ const index = async (req, res, next) => {
       statusLabel,
       successMessage,
       errorMessage,
+      search,
+      currentPage: page,
+      totalPages,
+      totalItems,
     });
   } catch (err) {
     next(err);
@@ -725,6 +754,10 @@ const downloadLaporan = async (req, res, next) => {
         doc.addPage();
         curY = MARGIN;
       }
+
+      // Reset posisi internal PDFKit agar setiap request dimulai dari margin kiri (full width)
+      doc.x = MARGIN;
+      doc.y = curY;
 
       // ── Badge nomor & status ─────────────────────────────────────────────────
       const BADGE_H = 22;

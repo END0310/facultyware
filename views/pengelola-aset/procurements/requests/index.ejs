@@ -14,13 +14,23 @@
   </div>
 </section>
 
+<!-- Search bar -->
+<div class="mb-4">
+  <form method="GET" action="/procurements/requests" style="display:flex;gap:8px;align-items:center;">
+    <input type="text" name="search" value="<%= search %>" placeholder="Cari nomor usulan atau nama barang..." class="input" style="flex:1;max-width:360px;" />
+    <button type="submit" class="btn-outline">Cari</button>
+    <% if (search) { %>
+    <a href="/procurements/requests" class="btn-ghost text-sm">Reset</a>
+    <% } %>
+  </form>
+</div>
+
 <section class="card p-6">
-  <p class="mb-4 text-foreground">Gunakan daftar ini untuk meninjau usulan masuk sebelum diubah statusnya atau diteruskan menjadi permohonan pengadaan.</p>
   <div class="overflow-x-auto">
     <table class="table">
       <thead><tr><th>No Usulan</th><th>Barang</th><th>Spesifikasi</th><th>Jumlah</th><th>Pengusul</th><th>Status</th><th>Tanggal</th><th>Aksi</th></tr></thead>
       <tbody>
-        <% if (!requests.length) { %><tr><td colspan="8">Belum ada data usulan.</td></tr><% } %>
+        <% if (!requests.length) { %><tr><td colspan="8"><%= search ? 'Tidak ada hasil untuk "' + search + '"' : 'Belum ada data usulan.' %></td></tr><% } %>
         <% requests.forEach(r => { %>
           <tr>
             <td><%= r.request_number %></td>
@@ -35,6 +45,19 @@
         <% }) %>
       </tbody>
     </table>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;font-size:14px;color:#6b7280;">
+    <span>Menampilkan <strong><%= requests.length %></strong> dari <strong><%= totalItems %></strong> usulan</span>
+    <% if (totalPages > 1) { %>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <a href="/procurements/requests?page=<%= Math.max(1, currentPage - 1) %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+         class="btn-sm-outline<%= currentPage <= 1 ? ' pointer-events-none opacity-50' : '' %>">← Prev</a>
+      <span>Hal <strong><%= currentPage %></strong> / <%= totalPages %></span>
+      <a href="/procurements/requests?page=<%= Math.min(totalPages, currentPage + 1) %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+         class="btn-sm-outline<%= currentPage >= totalPages ? ' pointer-events-none opacity-50' : '' %>">Next →</a>
+    </div>
+    <% } %>
   </div>
 </section>
 

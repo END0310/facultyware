@@ -4,17 +4,42 @@ const { applyProcurementDecision } = require('../lib/procurement-assets');
 
 const listPermohonan = async (req, res) => {
     try {
-        const query = `
+        const search = String(req.query.search || '').trim();
+        const page   = Math.max(1, parseInt(req.query.page, 10) || 1);
+        const limit  = 10;
+        const offset = (page - 1) * limit;
+
+        let whereClause = "WHERE ep.status = 'submitted'";
+        const params = [];
+
+        if (search) {
+            whereClause += ' AND (ep.request_number LIKE ? OR ep.title LIKE ?)';
+            const like = `%${search}%`;
+            params.push(like, like);
+        }
+
+        const [countRows] = await db.query(
+            `SELECT COUNT(*) AS total FROM equipment_procurements ep ${whereClause}`,
+            params
+        );
+        const totalItems = countRows[0].total;
+        const totalPages = Math.max(1, Math.ceil(totalItems / limit));
+
+        const [rows] = await db.query(`
             SELECT ep.id, ep.request_number, ep.title, ep.status, e.name AS created_by_name, ep.created_at 
             FROM equipment_procurements ep 
             JOIN employees e ON ep.created_by = e.id 
-            WHERE ep.status = 'submitted' 
+            ${whereClause}
             ORDER BY ep.created_at DESC
-        `;
-        const [rows] = await db.query(query);
+            LIMIT ? OFFSET ?
+        `, [...params, limit, offset]);
         res.render('wakildekan/index', { 
             permohonan: rows, 
-            title: 'Daftar Permohonan Pengadaan' 
+            title: 'Daftar Permohonan Pengadaan',
+            search,
+            currentPage: page,
+            totalPages,
+            totalItems
         });
     } catch (error) {
         console.error(error);
@@ -98,17 +123,42 @@ const rejectPermohonan = async (req, res) => {
 
 const riwayatPermohonan = async (req, res) => {
     try {
-        const query = `
+        const search = String(req.query.search || '').trim();
+        const page   = Math.max(1, parseInt(req.query.page, 10) || 1);
+        const limit  = 10;
+        const offset = (page - 1) * limit;
+
+        let whereClause = "WHERE ep.status IN ('approved', 'rejected')";
+        const params = [];
+
+        if (search) {
+            whereClause += ' AND (ep.request_number LIKE ? OR ep.title LIKE ?)';
+            const like = `%${search}%`;
+            params.push(like, like);
+        }
+
+        const [countRows] = await db.query(
+            `SELECT COUNT(*) AS total FROM equipment_procurements ep ${whereClause}`,
+            params
+        );
+        const totalItems = countRows[0].total;
+        const totalPages = Math.max(1, Math.ceil(totalItems / limit));
+
+        const [rows] = await db.query(`
             SELECT ep.id, ep.request_number, ep.title, ep.status, e.name AS created_by_name, ep.created_at 
             FROM equipment_procurements ep 
             JOIN employees e ON ep.created_by = e.id 
-            WHERE ep.status IN ('approved', 'rejected')
+            ${whereClause}
             ORDER BY ep.created_at DESC
-        `;
-        const [rows] = await db.query(query);
+            LIMIT ? OFFSET ?
+        `, [...params, limit, offset]);
         res.render('wakildekan/riwayat', { 
             permohonan: rows, 
-            title: 'Riwayat Keputusan' 
+            title: 'Riwayat Keputusan',
+            search,
+            currentPage: page,
+            totalPages,
+            totalItems
         });
     } catch (error) {
         console.error(error);

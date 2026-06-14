@@ -28,19 +28,46 @@ async function findUserById(id) {
 
 const index = async (req, res, next) => {
   try {
+    const search = String(req.query.search || '').trim();
+    const page   = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit  = 10;
+    const offset = (page - 1) * limit;
+
+    let whereClause = '';
+    const params = [];
+
+    if (search) {
+      whereClause = 'WHERE u.name LIKE ? OR u.email LIKE ?';
+      const like = `%${search}%`;
+      params.push(like, like);
+    }
+
+    const [countRows] = await db.query(
+      `SELECT COUNT(*) AS total FROM users u ${whereClause}`,
+      params
+    );
+    const totalItems = countRows[0].total;
+    const totalPages = Math.max(1, Math.ceil(totalItems / limit));
+
     const [users] = await db.query(`
       SELECT u.id, u.name, u.email,
              COALESCE(GROUP_CONCAT(DISTINCT r.name ORDER BY r.name SEPARATOR ', '), '') AS roles
       FROM users u
       LEFT JOIN model_has_roles mhr ON mhr.model_id = u.id
       LEFT JOIN roles r ON r.id = mhr.role_id
+      ${whereClause}
       GROUP BY u.id, u.name, u.email
       ORDER BY u.name ASC, u.id ASC
-    `);
+      LIMIT ? OFFSET ?
+    `, [...params, limit, offset]);
 
     render(res, 'admin/users/index', {
       title: 'Manajemen Akun Admin',
-      users
+      users,
+      search,
+      currentPage: page,
+      totalPages,
+      totalItems
     });
   } catch (err) {
     next(err);

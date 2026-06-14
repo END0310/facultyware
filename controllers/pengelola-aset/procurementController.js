@@ -90,14 +90,37 @@ async function getProcurementItems(id) {
 
 const listRequests = async (req, res, next) => {
   try {
+    const search = String(req.query.search || '').trim();
+    const page   = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit  = 10;
+    const offset = (page - 1) * limit;
+
+    let whereClause = '';
+    const params = [];
+
+    if (search) {
+      whereClause = 'WHERE er.request_number LIKE ? OR er.name LIKE ?';
+      const like = `%${search}%`;
+      params.push(like, like);
+    }
+
+    const [countRows] = await db.query(
+      `SELECT COUNT(*) AS total FROM equipment_requests er ${whereClause}`,
+      params
+    );
+    const totalItems = countRows[0].total;
+    const totalPages = Math.max(1, Math.ceil(totalItems / limit));
+
     const [requests] = await db.query(`
       SELECT er.*, emp.name AS employee_name, approver.name AS approved_by_name
       FROM equipment_requests er
       LEFT JOIN employees emp ON emp.id = er.employee_id
       LEFT JOIN employees approver ON approver.id = er.approved_by
+      ${whereClause}
       ORDER BY er.created_at DESC, er.id DESC
-    `);
-    res.render('pengelola-aset/procurements/requests/index', { title: 'Daftar Usulan Pengadaan', requests });
+      LIMIT ? OFFSET ?
+    `, [...params, limit, offset]);
+    res.render('pengelola-aset/procurements/requests/index', { title: 'Daftar Usulan Pengadaan', requests, search, currentPage: page, totalPages, totalItems });
   } catch (err) {
     next(err);
   }
@@ -200,15 +223,38 @@ const createProcurement = async (req, res, next) => {
 
 const listProcurements = async (req, res, next) => {
   try {
+    const search = String(req.query.search || '').trim();
+    const page   = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit  = 10;
+    const offset = (page - 1) * limit;
+
+    let whereClause = '';
+    const params = [];
+
+    if (search) {
+      whereClause = 'WHERE ep.request_number LIKE ? OR ep.title LIKE ?';
+      const like = `%${search}%`;
+      params.push(like, like);
+    }
+
+    const [countRows] = await db.query(
+      `SELECT COUNT(*) AS total FROM equipment_procurements ep ${whereClause}`,
+      params
+    );
+    const totalItems = countRows[0].total;
+    const totalPages = Math.max(1, Math.ceil(totalItems / limit));
+
     const [procurements] = await db.query(`
       SELECT ep.*, emp.name AS created_by_name, COUNT(item.id) AS item_count, COALESCE(SUM(item.quantity * item.estimated_price), 0) AS total_estimated_price
       FROM equipment_procurements ep
       LEFT JOIN employees emp ON emp.id = ep.created_by
       LEFT JOIN equipment_proc_items item ON item.equipment_proc_id = ep.id
+      ${whereClause}
       GROUP BY ep.id, emp.name
       ORDER BY ep.created_at DESC, ep.id DESC
-    `);
-    res.render('pengelola-aset/procurements/index', { title: 'Daftar Permohonan Pengadaan', procurements, rupiah });
+      LIMIT ? OFFSET ?
+    `, [...params, limit, offset]);
+    res.render('pengelola-aset/procurements/index', { title: 'Daftar Permohonan Pengadaan', procurements, rupiah, search, currentPage: page, totalPages, totalItems });
   } catch (err) {
     next(err);
   }
