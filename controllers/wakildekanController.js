@@ -42,8 +42,12 @@ const listPermohonan = async (req, res) => {
             totalItems
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Server error');
+        console.error('listPermohonan error:', error);
+        res.status(500).render('wakildekan/error', {
+            title: 'Terjadi Kesalahan',
+            message: 'Gagal memuat daftar permohonan. Silakan coba lagi nanti.',
+            backUrl: '/wakildekan/dashboard'
+        });
     }
 };
 
@@ -71,11 +75,17 @@ const detailPermohonan = async (req, res) => {
         res.render('wakildekan/detail', {
             permohonan: permohonanRows[0],
             items: itemRows,
-            title: 'Detail Permohonan'
+            title: 'Detail Permohonan',
+            errorMessage: req.session.errorMessage || null
         });
+        delete req.session.errorMessage;
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Server error');
+        console.error('detailPermohonan error:', error);
+        res.status(500).render('wakildekan/error', {
+            title: 'Terjadi Kesalahan',
+            message: 'Gagal memuat detail permohonan. Silakan coba lagi nanti.',
+            backUrl: '/wakildekan/permohonan'
+        });
     }
 };
 
@@ -93,8 +103,9 @@ const approvePermohonan = async (req, res) => {
         res.redirect('/wakildekan/permohonan');
     } catch (error) {
         await conn.rollback();
-        console.error(error);
-        res.status(500).send('Server error');
+        console.error('approvePermohonan error:', error);
+        req.session.errorMessage = 'Gagal menyetujui permohonan: ' + (error.message || 'Terjadi kesalahan server');
+        res.redirect('/wakildekan/permohonan/' + req.params.id);
     } finally {
         conn.release();
     }
@@ -114,8 +125,9 @@ const rejectPermohonan = async (req, res) => {
         res.redirect('/wakildekan/permohonan');
     } catch (error) {
         await conn.rollback();
-        console.error(error);
-        res.status(500).send('Server error');
+        console.error('rejectPermohonan error:', error);
+        req.session.errorMessage = 'Gagal menolak permohonan: ' + (error.message || 'Terjadi kesalahan server');
+        res.redirect('/wakildekan/permohonan/' + req.params.id);
     } finally {
         conn.release();
     }
@@ -161,8 +173,12 @@ const riwayatPermohonan = async (req, res) => {
             totalItems
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Server error');
+        console.error('riwayatPermohonan error:', error);
+        res.status(500).render('wakildekan/error', {
+            title: 'Terjadi Kesalahan',
+            message: 'Gagal memuat riwayat keputusan. Silakan coba lagi nanti.',
+            backUrl: '/wakildekan/dashboard'
+        });
     }
 };
 
@@ -233,8 +249,12 @@ const downloadPDF = async (req, res) => {
 
         doc.end();
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Server error');
+        console.error('downloadPDF error:', error);
+        res.status(500).render('wakildekan/error', {
+            title: 'Gagal Mengunduh PDF',
+            message: 'Terjadi kesalahan saat membuat laporan PDF. Silakan coba lagi nanti.',
+            backUrl: '/wakildekan/riwayat'
+        });
     }
 };
 
@@ -304,8 +324,12 @@ const dashboard = async (req, res) => {
             title: 'Dashboard Wakil Dekan'
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Server error');
+        console.error('dashboard error:', error);
+        res.status(500).render('wakildekan/error', {
+            title: 'Terjadi Kesalahan',
+            message: 'Gagal memuat dashboard. Silakan coba lagi nanti.',
+            backUrl: '/wakildekan/permohonan'
+        });
     }
 };
 
