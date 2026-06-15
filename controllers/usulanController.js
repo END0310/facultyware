@@ -64,29 +64,65 @@ async function getEmployeeId(userId) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FITUR 3 — Daftar & Status Usulan Milik User yang Login
-// GET /usulan
+// GET /usulan?search=...&page=...
 // ─────────────────────────────────────────────────────────────────────────────
 const index = async (req, res, next) => {
   try {
     const userId = req.session.userId;
 
-    const [procurements] = await db.query(
-      `SELECT
-         ep.id,
-         ep.request_number,
-         ep.title,
-         ep.status,
-         ep.created_at,
-         ep.updated_at,
-         COUNT(epi.id)                                        AS total_items,
-         COALESCE(SUM(epi.quantity * epi.estimated_price), 0) AS total_estimasi
-       FROM equipment_procurements ep
-       LEFT JOIN equipment_proc_items epi ON ep.id = epi.equipment_proc_id
-       WHERE ep.created_by = ?
-       GROUP BY ep.id
-       ORDER BY ep.created_at DESC`,
-      [userId]
-    );
+    // ── Searching ──────────────────────────────────────────────────────────
+    const search = (req.query.search || "").trim();
+
+    // ── Pagination ─────────────────────────────────────────────────────────
+    const PER_PAGE   = 10;
+    const page       = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const offset     = (page - 1) * PER_PAGE;
+
+    const searchParam = "%" + search + "%";
+
+    // Query utama dengan LIMIT/OFFSET
+    let mainQuery, mainParams, countQuery, countParams;
+
+    if (search) {
+      mainQuery = `SELECT
+           ep.id, ep.request_number, ep.title, ep.status,
+           ep.created_at, ep.updated_at,
+           COUNT(epi.id)                                        AS total_items,
+           COALESCE(SUM(epi.quantity * epi.estimated_price), 0) AS total_estimasi
+         FROM equipment_procurements ep
+         LEFT JOIN equipment_proc_items epi ON ep.id = epi.equipment_proc_id
+         WHERE ep.created_by = ?
+           AND (ep.title LIKE ? OR ep.request_number LIKE ?)
+         GROUP BY ep.id
+         ORDER BY ep.created_at DESC
+         LIMIT ? OFFSET ?`;
+      mainParams  = [userId, searchParam, searchParam, PER_PAGE, offset];
+
+      countQuery  = "SELECT COUNT(*) AS total FROM equipment_procurements ep WHERE ep.created_by = ? AND (ep.title LIKE ? OR ep.request_number LIKE ?)";
+      countParams = [userId, searchParam, searchParam];
+    } else {
+      mainQuery = `SELECT
+           ep.id, ep.request_number, ep.title, ep.status,
+           ep.created_at, ep.updated_at,
+           COUNT(epi.id)                                        AS total_items,
+           COALESCE(SUM(epi.quantity * epi.estimated_price), 0) AS total_estimasi
+         FROM equipment_procurements ep
+         LEFT JOIN equipment_proc_items epi ON ep.id = epi.equipment_proc_id
+         WHERE ep.created_by = ?
+         GROUP BY ep.id
+         ORDER BY ep.created_at DESC
+         LIMIT ? OFFSET ?`;
+      mainParams  = [userId, PER_PAGE, offset];
+
+      countQuery  = "SELECT COUNT(*) AS total FROM equipment_procurements ep WHERE ep.created_by = ?";
+      countParams = [userId];
+    }
+
+    const [procurements] = await db.query(mainQuery, mainParams);
+    const [[countRow]]   = await db.query(countQuery, countParams);
+
+    const totalData  = countRow.total;
+    const totalPages = Math.ceil(totalData / PER_PAGE);
 
     const successMessage = req.session.successMessage || null;
     const errorMessage   = req.session.errorMessage   || null;
@@ -101,6 +137,11 @@ const index = async (req, res, next) => {
       statusLabel,
       successMessage,
       errorMessage,
+      search,
+      currentPage: page,
+      totalPages,
+      totalData,
+      PER_PAGE,
     });
   } catch (err) {
     next(err);
@@ -147,9 +188,23 @@ const store = async (req, res, next) => {
   const quantities = Array.isArray(item_quantities) ? item_quantities : item_quantities ? [item_quantities] : [];
   const prices     = Array.isArray(item_prices)     ? item_prices     : item_prices     ? [item_prices]     : [];
 
-  if (names.filter((n) => n && n.trim() !== "").length === 0) {
+  const validNames = names.filter((n) => n && n.trim() !== "");
+  if (validNames.length === 0) {
     errors.push("Minimal 1 item barang harus ditambahkan.");
   }
+
+  names.forEach((name, i) => {
+    if (!name || name.trim() === "") return;
+    const label = `Barang #${i + 1} (${name.trim()})`;
+    const qty   = parseInt(quantities[i], 10);
+    const price = parseFloat(prices[i]);
+    if (isNaN(qty) || qty < 1) {
+      errors.push(`${label}: jumlah harus minimal 1.`);
+    }
+    if (isNaN(price) || price < 0) {
+      errors.push(`${label}: harga satuan tidak boleh negatif.`);
+    }
+  });
 
   if (errors.length > 0) {
     return res.render("usulan/create", {
@@ -270,9 +325,23 @@ const update = async (req, res, next) => {
   const quantities = Array.isArray(item_quantities) ? item_quantities : item_quantities ? [item_quantities] : [];
   const prices     = Array.isArray(item_prices)     ? item_prices     : item_prices     ? [item_prices]     : [];
 
-  if (names.filter((n) => n && n.trim() !== "").length === 0) {
+  const validNamesUpd = names.filter((n) => n && n.trim() !== "");
+  if (validNamesUpd.length === 0) {
     errors.push("Minimal 1 item barang harus ditambahkan.");
   }
+
+  names.forEach((name, i) => {
+    if (!name || name.trim() === "") return;
+    const label = `Barang #${i + 1} (${name.trim()})`;
+    const qty   = parseInt(quantities[i], 10);
+    const price = parseFloat(prices[i]);
+    if (isNaN(qty) || qty < 1) {
+      errors.push(`${label}: jumlah harus minimal 1.`);
+    }
+    if (isNaN(price) || price < 0) {
+      errors.push(`${label}: harga satuan tidak boleh negatif.`);
+    }
+  });
 
   if (errors.length > 0) {
     const [items]    = await db.query(`SELECT * FROM equipment_proc_items WHERE equipment_proc_id = ?`, [id]);

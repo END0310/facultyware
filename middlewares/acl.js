@@ -3,12 +3,7 @@ const db = require("../lib/db");
 /**
  * ACL Middleware
  * Cek apakah user memiliki permission yang dibutuhkan.
- *
- * Struktur DB:
- * permissions
- * role_has_permissions
- * model_has_roles
- * roles
+ * Mendukung dua format model_type: 'User' dan 'App\Models\User'
  */
 const checkPermission = (requiredPermissions) => {
   return async (req, res, next) => {
@@ -29,7 +24,7 @@ const checkPermission = (requiredPermissions) => {
         JOIN model_has_roles mhr
           ON rhp.role_id = mhr.role_id
         WHERE mhr.model_id = ?
-          AND mhr.model_type = 'User'
+          AND mhr.model_type IN ('User', 'App\\\\Models\\\\User')
           AND p.name IN (?)
       `;
 
@@ -58,43 +53,34 @@ const checkPermission = (requiredPermissions) => {
 
 /**
  * Load role user ke semua view
- *
- * app.use(loadUserRoles);
+ * Mendukung dua format model_type
  */
 const loadUserRoles = async (req, res, next) => {
   if (!req.session.userId) {
     req.userRoles = [];
-
     res.locals.userRoles = [];
     res.locals.username = "";
     res.locals.userId = null;
-
     return next();
   }
 
   try {
     const [rows] = await db.query(
-      `
-      SELECT r.name
-      FROM roles r
-      JOIN model_has_roles mhr
-        ON r.id = mhr.role_id
-      WHERE mhr.model_id = ?
-        AND mhr.model_type = 'User'
-      `,
+      `SELECT r.name
+       FROM roles r
+       JOIN model_has_roles mhr ON r.id = mhr.role_id
+       WHERE mhr.model_id = ?
+         AND mhr.model_type IN ('User', 'App\\\\Models\\\\User')`,
       [req.session.userId]
     );
 
     req.userRoles = rows.map((r) => r.name);
-
     res.locals.userRoles = req.userRoles;
     res.locals.username = req.session.username || "";
     res.locals.userId = req.session.userId;
   } catch (err) {
     console.error(err);
-
     req.userRoles = [];
-
     res.locals.userRoles = [];
     res.locals.username = "";
     res.locals.userId = null;

@@ -78,6 +78,12 @@
             <h3 id="group-pengadaan" class="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Pengadaan Barang</h3>
             <ul class="mt-1 space-y-0.5">
               <li>
+                <a href="/home" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                  Dashboard
+                </a>
+              </li>
+              <li>
                 <a href="/usulan" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                   Daftar Usulan
@@ -177,6 +183,31 @@
             </a>
           </header>
 
+          <!-- Search bar -->
+          <form method="GET" action="/usulan" class="mb-4">
+            <div class="flex gap-2">
+              <div class="relative flex-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input
+                  type="text"
+                  name="search"
+                  value="<%= search %>"
+                  placeholder="Cari berdasarkan judul atau nomor permintaan..."
+                  class="w-full pl-9"
+                />
+              </div>
+              <button type="submit" class="btn-outline">Cari</button>
+              <% if (search) { %>
+              <a href="/usulan" class="btn-ghost">Reset</a>
+              <% } %>
+            </div>
+            <% if (search) { %>
+            <p class="text-sm text-muted-foreground mt-2">
+              Menampilkan <strong><%= totalData %></strong> hasil untuk "<strong><%= search %></strong>"
+            </p>
+            <% } %>
+          </form>
+
           <!-- Flash: sukses -->
           <% if (successMessage) { %>
           <div class="alert mb-4" role="alert" style="background:var(--color-success-subtle,#f0fdf4);border-color:#86efac;color:#166534;">
@@ -196,7 +227,7 @@
           <!-- Table card -->
           <div class="card">
             <section class="p-0 overflow-x-auto">
-              <% if (procurements.length === 0) { %>
+              <% if (totalData === 0) { %>
               <div class="empty p-12">
                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground mx-auto mb-3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 <h3 class="text-sm font-medium text-center">Belum ada usulan</h3>
@@ -267,9 +298,14 @@
               <% } %>
             </section>
 
-            <% if (procurements.length > 0) { %>
+            <% if (totalData > 0) { %>
             <footer class="flex items-center justify-between px-4 py-3 border-t text-sm text-muted-foreground">
-              <span>Total: <strong class="text-foreground"><%= procurements.length %></strong> usulan</span>
+              <span>
+                Total: <strong class="text-foreground"><%= totalData %></strong> usulan
+                <% if (totalPages > 1) { %>
+                  &mdash; Halaman <%= currentPage %> dari <%= totalPages %>
+                <% } %>
+              </span>
               <div class="flex items-center gap-2">
                 <a href="/usulan/api/riwayat" target="_blank" class="btn-sm-outline flex items-center gap-1.5">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
@@ -281,6 +317,57 @@
                 </a>
               </div>
             </footer>
+
+            <!-- Paginator -->
+            <% if (totalPages > 1) { %>
+            <div class="flex items-center justify-center gap-1 px-4 py-3 border-t">
+              <%
+                const buildUrl = (p) => {
+                  const q = search ? `?search=${encodeURIComponent(search)}&page=${p}` : `?page=${p}`;
+                  return '/usulan' + q;
+                };
+              %>
+
+              <!-- Prev -->
+              <% if (currentPage > 1) { %>
+              <a href="<%= buildUrl(currentPage - 1) %>" class="btn-sm-outline px-3" aria-label="Halaman sebelumnya">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </a>
+              <% } else { %>
+              <span class="btn-sm-outline px-3 opacity-40 cursor-not-allowed" aria-disabled="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </span>
+              <% } %>
+
+              <!-- Nomor halaman -->
+              <% for (let p = 1; p <= totalPages; p++) { %>
+                <% if (
+                  p === 1 || p === totalPages ||
+                  (p >= currentPage - 2 && p <= currentPage + 2)
+                ) { %>
+                  <a
+                    href="<%= buildUrl(p) %>"
+                    class="btn-sm-outline px-3 <%= p === currentPage ? 'bg-primary text-primary-foreground' : '' %>"
+                    <%= p === currentPage ? 'aria-current="page"' : '' %>
+                  ><%= p %></a>
+                <% } else if (p === currentPage - 3 || p === currentPage + 3) { %>
+                  <span class="px-1 text-muted-foreground">…</span>
+                <% } %>
+              <% } %>
+
+              <!-- Next -->
+              <% if (currentPage < totalPages) { %>
+              <a href="<%= buildUrl(currentPage + 1) %>" class="btn-sm-outline px-3" aria-label="Halaman berikutnya">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </a>
+              <% } else { %>
+              <span class="btn-sm-outline px-3 opacity-40 cursor-not-allowed" aria-disabled="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </span>
+              <% } %>
+            </div>
+            <% } %>
+
             <% } %>
           </div>
 

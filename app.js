@@ -9,6 +9,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const { notFoundHandler, errorHandler } = require('./middlewares/error');
 const usulanRouter = require("./routes/usulan");
+const { loadUserRoles } = require("./middlewares/acl");
 
 var app = express();
 
@@ -30,6 +31,9 @@ app.use(session({
     maxAge: 1000 * 60 * 60 * 24
   }
 }));
+
+// Muat role user ke res.locals agar tersedia di semua view
+app.use(loadUserRoles);
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
