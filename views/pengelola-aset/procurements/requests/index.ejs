@@ -1,6 +1,6 @@
 <%- include('../../partials/header', { title, flash }) %>
-<% const badgeClass = (status) => status === 'asset_rejected' ? 'badge-destructive' : (status === 'submitted' ? 'badge-primary' : 'badge-secondary'); %>
-<% const statusLabel = (status) => ({ pending_asset: 'Menunggu Pengelola Aset', submitted: 'Diteruskan ke Wakil Dekan', asset_rejected: 'Ditolak Pengelola Aset' }[status] || status); %>
+<% const badgeClass = (status) => status === 'rejected' ? 'badge-destructive' : 'badge-secondary'; %>
+<% const statusLabel = (status) => ({ submitted: 'Menunggu Pengelola Aset', rejected: 'Ditolak Pengelola Aset' }[status] || status); %>
 
 <section class="card p-6 mb-6">
   <div class="flex items-start justify-between gap-4 flex-wrap">

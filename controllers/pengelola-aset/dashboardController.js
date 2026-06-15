@@ -1,8 +1,8 @@
 const db = require('../../lib/db');
 
 const emptySummary = () => ({
-  requests: { total: 0, pending_asset: 0, submitted: 0, asset_rejected: 0 },
-  procurements: { total: 0, draft: 0, pending_asset: 0, submitted: 0, approved: 0, rejected: 0, completed: 0 },
+  requests: { total: 0, submitted: 0, rejected: 0 },
+  procurements: { total: 0, draft: 0, submitted: 0, approved: 0, rejected: 0, completed: 0 },
   assets: { total: 0, totalCost: 0 },
   recentProcurements: [],
   recentRequests: []
@@ -22,8 +22,6 @@ async function renderKetuaDepartemenHome(req, res, next) {
     const summary = {
       total: 0,
       draft: 0,
-      pending_asset: 0,
-      asset_rejected: 0,
       submitted: 0,
       approved: 0,
       rejected: 0,
@@ -99,7 +97,7 @@ const home = async (req, res, next) => {
     const [requestStatusRows] = await db.query(`
       SELECT status, COUNT(*) AS total
       FROM equipment_procurements
-      WHERE status IN ('pending_asset', 'submitted', 'asset_rejected')
+      WHERE request_number LIKE 'REQ-%' AND status IN ('submitted', 'rejected')
       GROUP BY status
     `);
 
@@ -115,6 +113,7 @@ const home = async (req, res, next) => {
     const [procurementStatusRows] = await db.query(`
       SELECT status, COUNT(*) AS total
       FROM equipment_procurements
+      WHERE request_number NOT LIKE 'REQ-%'
       GROUP BY status
     `);
 
@@ -138,6 +137,7 @@ const home = async (req, res, next) => {
     const [recentProcurements] = await db.query(`
       SELECT id, request_number, title, status, created_at
       FROM equipment_procurements
+      WHERE request_number NOT LIKE 'REQ-%'
       ORDER BY created_at DESC, id DESC
       LIMIT 5
     `);
@@ -153,7 +153,7 @@ const home = async (req, res, next) => {
         COALESCE(SUM(item.quantity), 0) AS total_quantity
       FROM equipment_procurements ep
       LEFT JOIN equipment_proc_items item ON item.equipment_proc_id = ep.id
-      WHERE ep.status IN ('pending_asset', 'submitted', 'asset_rejected')
+      WHERE ep.request_number LIKE 'REQ-%' AND ep.status IN ('submitted', 'rejected')
       GROUP BY ep.id
       ORDER BY created_at DESC, id DESC
       LIMIT 5

@@ -1,9 +1,9 @@
 <%- include('../partials/header', { title: 'Dashboard Pengelola Aset', user: currentUser }) %>
 <%
   const badgeClass = (status) => {
-    if (status === 'rejected' || status === 'asset_rejected') return 'badge-destructive';
+    if (status === 'rejected') return 'badge-destructive';
     if (status === 'approved' || status === 'completed') return 'badge-primary';
-    if (status === 'pending_asset' || status === 'submitted' || status === 'draft') return 'badge-secondary';
+    if (status === 'submitted' || status === 'draft') return 'badge-secondary';
     return 'badge-outline';
   };
 
@@ -13,12 +13,15 @@
     approved: { label: 'Disetujui', color: 'text-green-500', badge: 'badge-primary', href: '/procurements', note: 'Siap dicatat ke daftar aset.' },
     rejected: { label: 'Ditolak', color: 'text-red-500', badge: 'badge-destructive', href: '/procurements', note: 'Perlu ditinjau ulang bila masih dibutuhkan.' },
     completed: { label: 'Tercatat', color: 'text-purple-500', badge: 'badge-primary', href: '/procurements/report?report_type=assets', note: 'Sudah masuk pencatatan aset.' },
-    pending_asset: { label: 'Menunggu Aset', color: 'text-amber-900 dark:text-amber-100', badge: 'badge-secondary', href: '/procurements/requests', note: 'Usulan perlu ditinjau Pengelola Aset.' },
-    asset_rejected: { label: 'Ditolak Pengelola Aset', color: 'text-red-500', badge: 'badge-destructive', href: '/procurements/requests', note: 'Usulan ditolak sebelum diteruskan ke Wakil Dekan.' }
+    request_submitted: { label: 'Menunggu Aset', color: 'text-amber-900 dark:text-amber-100', badge: 'badge-secondary', href: '/procurements/requests', note: 'Usulan perlu ditinjau Pengelola Aset.' },
+    request_rejected: { label: 'Ditolak Pengelola Aset', color: 'text-red-500', badge: 'badge-destructive', href: '/procurements/requests', note: 'Usulan ditolak sebelum diteruskan ke Wakil Dekan.' }
   };
 
   const procurementStatuses = ['draft', 'submitted', 'approved', 'rejected', 'completed'];
-  const requestStatuses = ['pending_asset', 'submitted', 'asset_rejected'];
+  const requestStatuses = [
+    { key: 'submitted', meta: statusMeta.request_submitted },
+    { key: 'rejected', meta: statusMeta.request_rejected }
+  ];
 %>
 
 <section class="card p-6 mb-6">
@@ -41,7 +44,7 @@
       <div>
         <p class="text-sm font-semibold text-blue-500">Usulan Masuk</p>
         <p class="mt-4 text-3xl font-bold"><%= summary.requests.total %></p>
-        <p class="mt-4 text-sm text-foreground"><%= summary.requests.pending_asset %> menunggu ditinjau</p>
+        <p class="mt-4 text-sm text-foreground"><%= summary.requests.submitted %> menunggu ditinjau</p>
       </div>
       <span class="badge-secondary">Usulan</span>
     </div>
@@ -114,7 +117,7 @@
       <span class="block mt-4 text-sm text-foreground">Buka/tutup ringkasan tindak lanjut usulan.</span>
     </summary>
     <div class="grid gap-3 mt-4">
-      <% requestStatuses.forEach((key) => { const item = statusMeta[key]; %>
+      <% requestStatuses.forEach((entry) => { const key = entry.key; const item = entry.meta; %>
         <a href="<%= item.href %>" class="block rounded-md border p-4 hover:bg-muted">
           <span class="flex items-start justify-between gap-3">
             <span>

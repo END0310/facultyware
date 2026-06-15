@@ -1,6 +1,6 @@
 <%- include('../../partials/header', { title, flash }) %>
-<% const badgeClass = (status) => status === 'asset_rejected' ? 'badge-destructive' : (status === 'submitted' ? 'badge-primary' : 'badge-secondary'); %>
-<% const statusLabel = (status) => ({ pending_asset: 'Menunggu Pengelola Aset', submitted: 'Diteruskan ke Wakil Dekan', asset_rejected: 'Ditolak Pengelola Aset' }[status] || status); %>
+<% const badgeClass = (status) => status === 'rejected' ? 'badge-destructive' : 'badge-secondary'; %>
+<% const statusLabel = (status) => ({ submitted: 'Menunggu Pengelola Aset', rejected: 'Ditolak Pengelola Aset' }[status] || status); %>
 
 <section class="card p-6 mb-6">
   <div class="flex items-start justify-between gap-4 flex-wrap">
@@ -27,14 +27,14 @@
   </div>
   <div class="card p-6">
     <h2 class="mb-4 text-lg font-semibold">Aksi Pengelola Aset</h2>
-    <% if (request.status === 'pending_asset') { %>
+    <% if (request.status === 'submitted' && request.request_number && request.request_number.startsWith('REQ-')) { %>
       <div class="flex gap-2 flex-wrap">
         <form action="/procurements/requests/<%= request.id %>/status" method="post">
           <input type="hidden" name="status" value="submitted">
           <button class="btn-primary" type="submit">Teruskan ke Wakil Dekan</button>
         </form>
         <form action="/procurements/requests/<%= request.id %>/status" method="post">
-          <input type="hidden" name="status" value="asset_rejected">
+          <input type="hidden" name="status" value="rejected">
           <button class="btn-outline" type="submit">Tolak Usulan</button>
         </form>
       </div>

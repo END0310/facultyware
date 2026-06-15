@@ -57,71 +57,7 @@
     </script>
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="sidebar" data-side="left" aria-hidden="false">
-      <nav aria-label="Sidebar navigation">
-        <header>
-          <a href="/home" class="btn-ghost p-2 h-12 w-full justify-start">
-            <div class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-              </svg>
-            </div>
-            <div class="grid flex-1 text-left text-sm leading-tight ml-2">
-              <span class="truncate font-medium">Facultyware</span>
-              <span class="truncate text-xs text-muted-foreground">Pengadaan Barang</span>
-            </div>
-          </a>
-        </header>
-
-        <div class="scrollbar p-2 flex-1 overflow-y-auto">
-          <div role="group" aria-labelledby="group-pengadaan">
-            <h3 id="group-pengadaan" class="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Pengadaan Barang</h3>
-            <ul class="mt-1 space-y-0.5">
-              <li>
-                <a href="/usulan" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                  Daftar Usulan
-                </a>
-              </li>
-              <li>
-                <a href="/usulan/create" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  Buat Usulan Baru
-                </a>
-              </li>
-              <li>
-                <a href="/usulan/laporan/pdf" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  Unduh Laporan PDF
-                </a>
-              </li>
-              <li>
-                <a href="/usulan/api/riwayat" target="_blank" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                  API Riwayat (JSON)
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- User footer -->
-        <footer class="p-2 border-t border-sidebar-border">
-          <div class="flex items-center gap-2 rounded-md px-2 py-1.5">
-            <div class="flex aspect-square size-8 items-center justify-center rounded-full bg-muted text-sm font-medium">
-              <%= user ? user.charAt(0).toUpperCase() : 'U' %>
-            </div>
-            <div class="grid flex-1 text-left text-sm leading-tight">
-              <span class="truncate font-medium"><%= user || 'Pengguna' %></span>
-              <span class="truncate text-xs text-muted-foreground">Ketua Departemen</span>
-            </div>
-            <a href="/logout" class="btn-sm-ghost px-2" data-tooltip="Keluar" data-side="top">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            </a>
-          </div>
-        </footer>
-      </nav>
-    </aside>
+    <%- include('../partials/ketua_departemen_sidebar', { user }) %>
 
     <!-- Main content -->
     <main id="content">
@@ -239,14 +175,18 @@
                       <%
                         const statusMap = {
                           draft:     { label: 'Draft',     cls: 'badge-muted' },
-                          pending_asset: { label: 'Menunggu Pengelola Aset', cls: 'badge-secondary' },
-                          asset_rejected: { label: 'Ditolak Pengelola Aset', cls: 'badge-destructive' },
                           submitted: { label: 'Diajukan ke Wakil Dekan',  cls: 'badge-secondary' },
                           approved:  { label: 'Disetujui', cls: 'badge-default' },
                           rejected:  { label: 'Ditolak',   cls: 'badge-destructive' },
                           completed: { label: 'Selesai',   cls: 'badge-secondary' }
                         };
                         const s = statusMap[p.status] || { label: p.status, cls: 'badge-outline' };
+                        if (p.request_number && p.request_number.startsWith('REQ-') && p.status === 'submitted') {
+                          s.label = 'Menunggu Pengelola Aset';
+                        }
+                        if (p.request_number && p.request_number.startsWith('REQ-') && p.status === 'rejected') {
+                          s.label = 'Ditolak Pengelola Aset';
+                        }
                       %>
                       <span class="badge <%= s.cls %>"><%= s.label %></span>
                     </td>

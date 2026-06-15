@@ -9,7 +9,7 @@ const listPermohonan = async (req, res) => {
         const limit  = 10;
         const offset = (page - 1) * limit;
 
-        let whereClause = "WHERE ep.status = 'submitted'";
+        let whereClause = "WHERE ep.status = 'submitted' AND ep.request_number NOT LIKE 'REQ-%'";
         const params = [];
 
         if (search) {
@@ -140,7 +140,7 @@ const riwayatPermohonan = async (req, res) => {
         const limit  = 10;
         const offset = (page - 1) * limit;
 
-        let whereClause = "WHERE ep.status IN ('approved', 'rejected')";
+        let whereClause = "WHERE ep.status IN ('approved', 'rejected') AND ep.request_number NOT LIKE 'REQ-%'";
         const params = [];
 
         if (search) {
@@ -188,7 +188,7 @@ const downloadPDF = async (req, res) => {
             SELECT ep.id, ep.request_number, ep.title, ep.status, e.name AS created_by_name, ep.created_at 
             FROM equipment_procurements ep 
             JOIN employees e ON ep.created_by = e.id 
-            WHERE ep.status IN ('approved', 'rejected')
+            WHERE ep.status IN ('approved', 'rejected') AND ep.request_number NOT LIKE 'REQ-%'
             ORDER BY ep.created_at DESC
         `;
         const [rows] = await db.query(query);
@@ -291,13 +291,14 @@ const dashboard = async (req, res) => {
                 SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) AS approved,
                 SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) AS rejected
             FROM equipment_procurements
+            WHERE request_number NOT LIKE 'REQ-%'
         `;
 
         const recentSubmittedQuery = `
             SELECT ep.id, ep.request_number, ep.title, ep.status, e.name AS created_by_name, ep.created_at
             FROM equipment_procurements ep
             JOIN employees e ON ep.created_by = e.id
-            WHERE ep.status = 'submitted'
+            WHERE ep.status = 'submitted' AND ep.request_number NOT LIKE 'REQ-%'
             ORDER BY ep.created_at DESC
             LIMIT 5
         `;
@@ -306,7 +307,7 @@ const dashboard = async (req, res) => {
             SELECT ep.id, ep.request_number, ep.title, ep.status, e.name AS created_by_name, ep.updated_at
             FROM equipment_procurements ep
             JOIN employees e ON ep.created_by = e.id
-            WHERE ep.status IN ('approved', 'rejected')
+            WHERE ep.status IN ('approved', 'rejected') AND ep.request_number NOT LIKE 'REQ-%'
             ORDER BY ep.updated_at DESC
             LIMIT 5
         `;

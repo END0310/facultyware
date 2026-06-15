@@ -1,7 +1,7 @@
 const db = require('../../lib/db');
 const { applyProcurementDecision } = require('../../lib/procurement-assets');
 
-const requestStatuses = ['pending_asset', 'submitted', 'asset_rejected'];
+const requestStatuses = ['submitted', 'rejected'];
 const procurementStatuses = ['draft', 'submitted', 'approved', 'rejected', 'completed'];
 const reportTypes = ['requests', 'procurements', 'assets'];
 const assetStatuses = ['available', 'in_use', 'maintenance', 'disposed'];
@@ -95,7 +95,7 @@ const listRequests = async (req, res, next) => {
     const limit  = 10;
     const offset = (page - 1) * limit;
 
-    let whereClause = `WHERE ep.status IN ('pending_asset', 'asset_rejected')`;
+    let whereClause = `WHERE ep.request_number LIKE 'REQ-%' AND ep.status IN ('submitted', 'rejected')`;
     const params = [];
 
     if (search) {
@@ -167,9 +167,11 @@ const updateRequestStatus = async (req, res, next) => {
   try {
     const [result] = await db.query(`
       UPDATE equipment_procurements
-      SET status = ?, updated_at = NOW()
-      WHERE id = ? AND status = 'pending_asset'
-    `, [status, req.params.id]);
+      SET request_number = CASE WHEN ? = 'submitted' THEN ? ELSE request_number END,
+          status = ?,
+          updated_at = NOW()
+      WHERE id = ? AND status = 'submitted' AND request_number LIKE 'REQ-%'
+    `, [status, nowRequestNumber('PR'), status, req.params.id]);
     if (!result.affectedRows) {
       flash(req, 'error', 'Usulan hanya bisa diproses saat masih menunggu Pengelola Aset.');
       return res.redirect(`/procurements/requests/${req.params.id}`);
@@ -185,7 +187,21 @@ const showCreateProcurement = async (req, res, next) => {
   try {
     let sourceRequest = null;
     if (req.query.request_id) {
-      const [rows] = await db.query('SELECT * FROM equipment_requests WHERE id = ? LIMIT 1', [req.query.request_id]);
+      const [rows] = await db.query(`
+        SELECT
+          ep.id,
+          ep.request_number,
+          ep.title,
+          item.name,
+          item.specification,
+          item.quantity,
+          item.estimated_price
+        FROM equipment_procurements ep
+        LEFT JOIN equipment_proc_items item ON item.equipment_proc_id = ep.id
+        WHERE ep.id = ?
+        ORDER BY item.id ASC
+        LIMIT 1
+      `, [req.query.request_id]);
       sourceRequest = rows[0] || null;
     }
     res.render('pengelola-aset/procurements/create', { title: 'Buat Permohonan Pengadaan', sourceRequest });
@@ -243,7 +259,7 @@ const listProcurements = async (req, res, next) => {
     const limit  = 10;
     const offset = (page - 1) * limit;
 
-    let whereClause = `WHERE ep.status NOT IN ('pending_asset', 'asset_rejected')`;
+    let whereClause = `WHERE ep.request_number NOT LIKE 'REQ-%'`;
     const params = [];
 
     if (search) {
@@ -480,10 +496,10 @@ function buildReportWhere(query, reportType) {
   const clauses = [];
   const params = [];
   if (reportType === 'requests') {
-    clauses.push(`ep.status IN ('pending_asset', 'submitted', 'asset_rejected')`);
+    clauses.push(`ep.request_number LIKE 'REQ-%' AND ep.status IN ('submitted', 'rejected')`);
   }
   if (reportType === 'procurements') {
-    clauses.push(`ep.status NOT IN ('pending_asset', 'asset_rejected')`);
+    clauses.push(`ep.request_number NOT LIKE 'REQ-%'`);
   }
   if (query.status) {
     if (reportType === 'requests' && requestStatuses.includes(query.status)) {

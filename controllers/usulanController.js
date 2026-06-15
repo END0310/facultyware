@@ -36,14 +36,19 @@ function formatRupiah(amount) {
 function statusLabel(status) {
   const map = {
     draft: "Draft",
-    pending_asset: "Menunggu Pengelola Aset",
-    asset_rejected: "Ditolak Pengelola Aset",
     submitted: "Diajukan ke Wakil Dekan",
     approved: "Disetujui",
     rejected: "Ditolak",
     completed: "Selesai",
   };
   return map[status] || status;
+}
+
+function statusLabelForRequest(status, requestNumber) {
+  const isAssetRequest = String(requestNumber || '').startsWith('REQ-');
+  if (isAssetRequest && status === 'submitted') return 'Menunggu Pengelola Aset';
+  if (isAssetRequest && status === 'rejected') return 'Ditolak Pengelola Aset';
+  return statusLabel(status);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -192,7 +197,7 @@ const store = async (req, res, next) => {
     });
   }
 
-  const status = action === "submit" ? "pending_asset" : "draft";
+  const status = action === "submit" ? "submitted" : "draft";
 
   const connection = await db.getConnection();
   try {
@@ -225,7 +230,7 @@ const store = async (req, res, next) => {
 
     await connection.commit();
 
-    const statusText = status === "pending_asset" ? "diajukan ke Pengelola Aset" : "disimpan sebagai draft";
+    const statusText = status === "submitted" ? "diajukan ke Pengelola Aset" : "disimpan sebagai draft";
     req.session.successMessage = `Usulan "${title.trim()}" berhasil ${statusText} (${requestNumber}).`;
     res.redirect("/usulan");
   } catch (err) {
@@ -341,7 +346,7 @@ const update = async (req, res, next) => {
       return res.redirect("/usulan");
     }
 
-    const newStatus = action === "submit" ? "pending_asset" : "draft";
+    const newStatus = action === "submit" ? "submitted" : "draft";
 
     await connection.query(
       `UPDATE equipment_procurements SET title = ?, status = ?, updated_at = NOW() WHERE id = ?`,
@@ -368,7 +373,7 @@ const update = async (req, res, next) => {
 
     await connection.commit();
 
-    const statusText = newStatus === "pending_asset" ? "diajukan ke Pengelola Aset" : "disimpan sebagai draft";
+    const statusText = newStatus === "submitted" ? "diajukan ke Pengelola Aset" : "disimpan sebagai draft";
     req.session.successMessage = `Usulan berhasil diperbarui dan ${statusText}.`;
     res.redirect("/usulan");
   } catch (err) {
@@ -934,7 +939,7 @@ const apiRiwayat = async (req, res, next) => {
         nomor_permintaan: proc.request_number,
         judul_usulan: proc.title,
         status: proc.status,
-        status_label: statusLabel(proc.status),
+        status_label: statusLabelForRequest(proc.status, proc.request_number),
         tanggal_dibuat: proc.created_at,
         total_estimasi: proc.total_estimasi,
         barang: proc.items,
