@@ -57,71 +57,7 @@
     </script>
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="sidebar" data-side="left" aria-hidden="false">
-      <nav aria-label="Sidebar navigation">
-        <header>
-          <a href="/home" class="btn-ghost p-2 h-12 w-full justify-start">
-            <div class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-              </svg>
-            </div>
-            <div class="grid flex-1 text-left text-sm leading-tight ml-2">
-              <span class="truncate font-medium">Facultyware</span>
-              <span class="truncate text-xs text-muted-foreground">Pengadaan Barang</span>
-            </div>
-          </a>
-        </header>
-
-        <div class="scrollbar p-2 flex-1 overflow-y-auto">
-          <div role="group" aria-labelledby="group-pengadaan">
-            <h3 id="group-pengadaan" class="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Pengadaan Barang</h3>
-            <ul class="mt-1 space-y-0.5">
-              <li>
-                <a href="/usulan" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                  Daftar Usulan
-                </a>
-              </li>
-              <li>
-                <a href="/usulan/create" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  Buat Usulan Baru
-                </a>
-              </li>
-              <li>
-                <a href="/usulan/laporan/pdf" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  Unduh Laporan PDF
-                </a>
-              </li>
-              <li>
-                <a href="/usulan/api/riwayat" target="_blank" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                  API Riwayat (JSON)
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- User footer -->
-        <footer class="p-2 border-t border-sidebar-border">
-          <div class="flex items-center gap-2 rounded-md px-2 py-1.5">
-            <div class="flex aspect-square size-8 items-center justify-center rounded-full bg-muted text-sm font-medium">
-              <%= user ? user.charAt(0).toUpperCase() : 'U' %>
-            </div>
-            <div class="grid flex-1 text-left text-sm leading-tight">
-              <span class="truncate font-medium"><%= user || 'Pengguna' %></span>
-              <span class="truncate text-xs text-muted-foreground">Ketua Departemen</span>
-            </div>
-            <a href="/logout" class="btn-sm-ghost px-2" data-tooltip="Keluar" data-side="top">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            </a>
-          </div>
-        </footer>
-      </nav>
-    </aside>
+    <%- include('../partials/ketua_departemen_sidebar', { user }) %>
 
     <!-- Main content -->
     <main id="content">
@@ -164,7 +100,6 @@
       <!-- Page content -->
       <div class="p-4 md:p-6 xl:p-8">
         <div class="max-w-screen-lg mx-auto">
-
           <!-- Page header -->
           <header class="flex items-center justify-between mb-6">
             <div>
@@ -176,6 +111,18 @@
               Buat Usulan Baru
             </a>
           </header>
+
+          <!-- Search bar -->
+          <form method="GET" action="/usulan" class="mb-4 flex items-center gap-2">
+            <div class="relative flex-1 max-w-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" name="search" value="<%= search %>" placeholder="Cari nomor request atau judul..." class="input h-10 pl-9 w-full" />
+            </div>
+            <button type="submit" class="btn-outline h-10">Cari</button>
+            <% if (search) { %>
+            <a href="/usulan" class="btn-ghost h-10 text-sm">Reset</a>
+            <% } %>
+          </form>
 
           <!-- Flash: sukses -->
           <% if (successMessage) { %>
@@ -199,11 +146,13 @@
               <% if (procurements.length === 0) { %>
               <div class="empty p-12">
                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground mx-auto mb-3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                <h3 class="text-sm font-medium text-center">Belum ada usulan</h3>
-                <p class="text-sm text-muted-foreground text-center mt-1">Mulai dengan membuat usulan pengadaan pertama Anda.</p>
+                <h3 class="text-sm font-medium text-center"><%= search ? 'Tidak ada hasil untuk "' + search + '"' : 'Belum ada usulan' %></h3>
+                <p class="text-sm text-muted-foreground text-center mt-1"><%= search ? 'Coba kata kunci lain.' : 'Mulai dengan membuat usulan pengadaan pertama Anda.' %></p>
+                <% if (!search) { %>
                 <div class="flex justify-center mt-4">
                   <a href="/usulan/create" class="btn-sm">Buat Usulan</a>
                 </div>
+                <% } %>
               </div>
               <% } else { %>
               <table class="w-full text-sm">
@@ -226,12 +175,18 @@
                       <%
                         const statusMap = {
                           draft:     { label: 'Draft',     cls: 'badge-muted' },
-                          submitted: { label: 'Diajukan',  cls: 'badge-secondary' },
+                          submitted: { label: 'Diajukan ke Wakil Dekan',  cls: 'badge-secondary' },
                           approved:  { label: 'Disetujui', cls: 'badge-default' },
                           rejected:  { label: 'Ditolak',   cls: 'badge-destructive' },
                           completed: { label: 'Selesai',   cls: 'badge-secondary' }
                         };
                         const s = statusMap[p.status] || { label: p.status, cls: 'badge-outline' };
+                        if (p.request_number && p.request_number.startsWith('REQ-') && p.status === 'submitted') {
+                          s.label = 'Menunggu Pengelola Aset';
+                        }
+                        if (p.request_number && p.request_number.startsWith('REQ-') && p.status === 'rejected') {
+                          s.label = 'Ditolak Pengelola Aset';
+                        }
                       %>
                       <span class="badge <%= s.cls %>"><%= s.label %></span>
                     </td>
@@ -251,7 +206,7 @@
                         </a>
 
                         <!-- Hapus — hanya draft -->
-                        <form action="/usulan/<%= p.id %>/delete" method="POST" onsubmit="return confirm('Yakin ingin menghapus usulan \u0022<%= p.title %>\u0022?')">
+                        <form action="/usulan/<%= p.id %>/delete" method="POST" onsubmit="return confirm('Yakin ingin menghapus usulan &quot;<%= p.title %>&quot;?')">
                           <button type="submit" class="btn-sm-ghost text-destructive hover:text-destructive" data-tooltip="Hapus" data-side="top">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                           </button>
@@ -267,10 +222,22 @@
               <% } %>
             </section>
 
-            <% if (procurements.length > 0) { %>
             <footer class="flex items-center justify-between px-4 py-3 border-t text-sm text-muted-foreground">
-              <span>Total: <strong class="text-foreground"><%= procurements.length %></strong> usulan</span>
+              <span>Menampilkan <strong class="text-foreground"><%= procurements.length %></strong> dari <strong class="text-foreground"><%= totalItems %></strong> usulan</span>
               <div class="flex items-center gap-2">
+                <% if (totalPages > 1) { %>
+                <a href="/usulan?page=<%= Math.max(1, currentPage - 1) %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+                   class="btn-sm-outline <%= currentPage <= 1 ? 'pointer-events-none opacity-50' : '' %>">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  Prev
+                </a>
+                <span class="text-sm tabular-nums">Hal <strong class="text-foreground"><%= currentPage %></strong> / <%= totalPages %></span>
+                <a href="/usulan?page=<%= Math.min(totalPages, currentPage + 1) %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+                   class="btn-sm-outline <%= currentPage >= totalPages ? 'pointer-events-none opacity-50' : '' %>">
+                  Next
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </a>
+                <% } %>
                 <a href="/usulan/api/riwayat" target="_blank" class="btn-sm-outline flex items-center gap-1.5">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
                   API JSON
@@ -281,7 +248,6 @@
                 </a>
               </div>
             </footer>
-            <% } %>
           </div>
 
         </div>

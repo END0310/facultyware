@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem("themeMode");
+          if (stored ? stored === "dark" : matchMedia("(prefers-color-scheme: dark)").matches) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+        document.addEventListener("basecoat:theme", (e) => {
+          const mode = e.detail?.mode;
+          const dark = mode === "dark" ? true : mode === "light" ? false : !document.documentElement.classList.contains("dark");
+          document.documentElement.classList.toggle("dark", dark);
+          try { localStorage.setItem("themeMode", dark ? "dark" : "light"); } catch (_) {}
+        });
+      })();
+    </script>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= title %> — Facultyware</title>
+
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+
+    <script src="/assets/js/basecoat.js?v=0.3.11" defer></script>
+    <script src="/assets/js/sidebar.js?v=0.3.11" defer></script>
+  </head>
+
+  <body>
+    <script>
+      (() => {
+        document.addEventListener("DOMContentLoaded", () => {
+          const sidebar = document.getElementById("sidebar");
+          if (!sidebar) return;
+          const updateCurrentLinks = () => {
+            const currentPath = window.location.pathname.replace(/\/$/, "");
+            sidebar.querySelectorAll("a").forEach((item) => {
+              const href = item.getAttribute("href");
+              if (!href) return;
+              try {
+                const url = new URL(href, window.location.origin);
+                if (url.pathname.replace(/\/$/, "") === currentPath) {
+                  item.setAttribute("aria-current", "page");
+                } else {
+                  item.removeAttribute("aria-current");
+                }
+              } catch (_) {}
+            });
+          };
+          updateCurrentLinks();
+        });
+      })();
+    </script>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar" data-side="left" aria-hidden="false">
+      <nav aria-label="Sidebar navigation">
+        <header>
+          <a href="/wakildekan/permohonan" class="btn-ghost p-2 h-12 w-full justify-start">
+            <div class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
+            <div class="grid flex-1 text-left text-sm leading-tight ml-2">
+              <span class="truncate font-medium">Facultyware</span>
+              <span class="truncate text-xs text-muted-foreground">Wakil Dekan</span>
+            </div>
+          </a>
+        </header>
+
+        <div class="scrollbar p-2 flex-1 overflow-y-auto">
+          <div role="group" aria-labelledby="group-wakildekan">
+            <h3 id="group-wakildekan" class="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Permohonan Pengadaan</h3>
+            <ul class="mt-1 space-y-0.5">
+              <li>
+                <a href="/wakildekan/dashboard" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                  Dashboard
+                </a>
+              </li>
+              <li>
+                <a href="/wakildekan/permohonan" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  Daftar Permohonan
+                </a>
+              </li>
+              <li>
+                <a href="/wakildekan/riwayat" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
+                  Riwayat Keputusan
+                </a>
+              </li>
+              <li>
+                <a href="/wakildekan/api/permohonan" target="_blank" class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent text-muted-foreground">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                  API JSON
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- User footer -->
+        <footer class="p-2 border-t border-sidebar-border">
+          <div class="flex items-center gap-2 rounded-md px-2 py-1.5">
+            <div class="flex aspect-square size-8 items-center justify-center rounded-full bg-muted text-sm font-medium">
+              <%= locals.username ? locals.username.charAt(0).toUpperCase() : 'W' %>
+            </div>
+            <div class="grid flex-1 text-left text-sm leading-tight">
+              <span class="truncate font-medium"><%= locals.username || 'Wakil Dekan' %></span>
+              <span class="truncate text-xs text-muted-foreground">Wakil Dekan</span>
+            </div>
+            <a href="/logout" class="btn-sm-ghost px-2" data-tooltip="Keluar" data-side="top">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </a>
+          </div>
+        </footer>
+      </nav>
+    </aside>
+
+    <!-- Main content -->
+    <main id="content">
+      <!-- Top header bar -->
+      <header class="bg-background sticky inset-x-0 top-0 isolate flex shrink-0 items-center gap-2 border-b z-10">
+        <div class="flex h-14 w-full items-center gap-2 px-4">
+          <button
+            type="button"
+            onclick="document.dispatchEvent(new CustomEvent('basecoat:sidebar'))"
+            aria-label="Toggle sidebar"
+            data-tooltip="Toggle sidebar"
+            data-side="bottom"
+            data-align="start"
+            class="btn-sm-icon-ghost mr-auto size-7 -ml-1.5"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2"/>
+              <path d="M9 3v18"/>
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            aria-label="Toggle dark mode"
+            data-tooltip="Toggle dark mode"
+            data-side="bottom"
+            onclick="document.dispatchEvent(new CustomEvent('basecoat:theme'))"
+            class="btn-icon-outline size-8"
+          >
+            <span class="hidden dark:block">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2m-7.07-14.07 1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2m-4.93 7.07-1.41-1.41M6.34 6.34 4.93 4.93"/></svg>
+            </span>
+            <span class="block dark:hidden">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            </span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Page content -->
+      <div class="p-4 md:p-6 xl:p-8">
+        <div class="max-w-screen-lg mx-auto">
+
+          <header class="flex items-center justify-between mb-6">
+            <div>
+              <h1 class="text-2xl font-bold tracking-tight"><%= title %></h1>
+              <p class="text-muted-foreground mt-1">Daftar permohonan pengadaan barang yang perlu diproses.</p>
+            </div>
+          </header>
+
+          <!-- Search bar -->
+          <form method="GET" action="/wakildekan/permohonan" class="mb-4 flex items-center gap-2">
+            <div class="relative flex-1 max-w-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" name="search" value="<%= search %>" placeholder="Cari nomor atau judul..." class="input h-10 pl-9 w-full" />
+            </div>
+            <button type="submit" class="btn-outline h-10">Cari</button>
+            <% if (search) { %>
+            <a href="/wakildekan/permohonan" class="btn-ghost h-10 text-sm">Reset</a>
+            <% } %>
+          </form>
+
+          <div class="card">
+            <section class="p-0 overflow-x-auto">
+              <% if (!permohonan || permohonan.length === 0) { %>
+              <div class="empty p-12">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground mx-auto mb-3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <h3 class="text-sm font-medium text-center">Belum ada permohonan masuk</h3>
+              </div>
+              <% } else { %>
+              <table class="w-full text-sm" id="dataTable">
+                <thead>
+                  <tr class="border-b bg-muted/50">
+                    <th class="px-4 py-3 text-left font-medium text-muted-foreground">No</th>
+                    <th class="px-4 py-3 text-left font-medium text-muted-foreground">Nomor Request</th>
+                    <th class="px-4 py-3 text-left font-medium text-muted-foreground">Judul</th>
+                    <th class="px-4 py-3 text-left font-medium text-muted-foreground">Diajukan Oleh</th>
+                    <th class="px-4 py-3 text-left font-medium text-muted-foreground">Tanggal</th>
+                    <th class="px-4 py-3 text-center font-medium text-muted-foreground">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% permohonan.forEach((item, index) => { %>
+                  <tr class="border-b last:border-0 hover:bg-muted/30 transition-colors data-row">
+                    <td class="px-4 py-3 text-muted-foreground"><%= index + 1 %></td>
+                    <td class="px-4 py-3 font-mono text-xs text-muted-foreground request-col"><%= item.request_number %></td>
+                    <td class="px-4 py-3 font-medium max-w-[200px] title-col"><%= item.title %></td>
+                    <td class="px-4 py-3"><%= item.created_by_name %></td>
+                    <td class="px-4 py-3 text-xs text-muted-foreground">
+                      <%= new Date(item.created_at).toLocaleDateString('id-ID') %>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                      <a href="/wakildekan/permohonan/<%= item.id %>" class="btn-sm">Lihat Detail</a>
+                    </td>
+                  </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+              <% } %>
+            </section>
+
+            <footer class="flex items-center justify-between px-4 py-3 border-t text-sm text-muted-foreground">
+              <span>Menampilkan <strong class="text-foreground"><%= permohonan.length %></strong> dari <strong class="text-foreground"><%= totalItems %></strong> permohonan</span>
+              <% if (totalPages > 1) { %>
+              <div class="flex items-center gap-2">
+                <a href="/wakildekan/permohonan?page=<%= Math.max(1, currentPage - 1) %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+                   class="btn-sm-outline <%= currentPage <= 1 ? 'pointer-events-none opacity-50' : '' %>">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  Prev
+                </a>
+                <span class="text-sm tabular-nums">Hal <strong class="text-foreground"><%= currentPage %></strong> / <%= totalPages %></span>
+                <a href="/wakildekan/permohonan?page=<%= Math.min(totalPages, currentPage + 1) %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+                   class="btn-sm-outline <%= currentPage >= totalPages ? 'pointer-events-none opacity-50' : '' %>">
+                  Next
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </a>
+              </div>
+              <% } %>
+            </footer>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+  </body>
+</html>

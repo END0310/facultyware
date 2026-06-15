@@ -1,1 +1,439 @@
-<%- include('home_default', { title, user }) %>
+<!doctype html>
+<html lang="id">
+  <head>
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem("themeMode");
+          if (
+            stored
+              ? stored === "dark"
+              : matchMedia("(prefers-color-scheme: dark)").matches
+          ) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (_) {}
+
+        const apply = (dark) => {
+          document.documentElement.classList.toggle("dark", dark);
+          try {
+            localStorage.setItem("themeMode", dark ? "dark" : "light");
+          } catch (_) {}
+        };
+
+        document.addEventListener("basecoat:theme", (event) => {
+          const mode = event.detail?.mode;
+          apply(
+            mode === "dark"
+              ? true
+              : mode === "light"
+                ? false
+                : !document.documentElement.classList.contains("dark"),
+          );
+        });
+      })();
+    </script>
+
+    <script>
+      (function () {
+        try {
+          const storedTheme = localStorage.getItem("themeVariant");
+          if (storedTheme)
+            document.documentElement.classList.add(`theme-${storedTheme}`);
+        } catch (event) {
+          console.error("Could not apply theme variant from localStorage", event);
+        }
+      })();
+    </script>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Language" content="id" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Dashboard — Facultyware</title>
+
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/assets/apple-touch-icon.png"
+    />
+
+    <link rel="stylesheet" href="/assets/styles.css" />
+
+    <script src="/assets/js/basecoat.js?v=0.3.11" defer></script>
+    <script src="/assets/js/sidebar.js?v=0.3.11" defer></script>
+    <script src="/assets/js/popover.js?v=0.3.11" defer></script>
+  </head>
+
+  <body>
+    <script>
+      (() => {
+        document.addEventListener("DOMContentLoaded", () => {
+          const sidebar = document.getElementById("sidebar");
+          if (!sidebar) return;
+
+          const updateCurrentLinks = () => {
+            const currentPath = window.location.pathname.replace(/\/$/, "");
+            const currentSearch = window.location.search;
+            const currentKey = `${currentPath}${currentSearch}`;
+
+            sidebar.querySelectorAll("a, button").forEach((item) => {
+              const href = item.getAttribute("href");
+              if (!href) {
+                item.removeAttribute("aria-current");
+                return;
+              }
+              const url = new URL(href, window.location.origin);
+              const itemPath = url.pathname.replace(/\/$/, "");
+              const itemKey = `${itemPath}${url.search}`;
+              if (itemKey === currentKey) {
+                item.setAttribute("aria-current", "page");
+              } else {
+                item.removeAttribute("aria-current");
+              }
+            });
+          };
+
+          document.addEventListener("htmx:afterSettle", updateCurrentLinks);
+          window.addEventListener("popstate", updateCurrentLinks);
+          updateCurrentLinks();
+        });
+      })();
+    </script>
+
+    <!-- ─── Sidebar ──────────────────────────────────────────── -->
+    <%- include('partials/ketua_departemen_sidebar', { user }) %>
+
+    <!-- ─── Main ─────────────────────────────────────────────── -->
+    <main id="content">
+
+      <!-- Top bar -->
+      <header
+        class="bg-background sticky inset-x-0 top-0 isolate flex shrink-0 items-center gap-2 border-b z-10"
+      >
+        <div class="flex h-14 w-full items-center gap-2 px-4">
+          <!-- Toggle sidebar -->
+          <button
+            type="button"
+            onclick="document.dispatchEvent(new CustomEvent('basecoat:sidebar'))"
+            aria-label="Toggle sidebar"
+            data-tooltip="Toggle sidebar"
+            data-side="bottom"
+            data-align="start"
+            class="btn-sm-icon-ghost mr-auto size-7 -ml-1.5"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2" />
+              <path d="M9 3v18" />
+            </svg>
+          </button>
+
+          <!-- Pilih tema warna -->
+          <select class="select h-8 leading-none" id="theme-select">
+            <option value="">Default</option>
+            <option value="claude">Claude</option>
+            <option value="doom-64">Doom 64</option>
+            <option value="supabase">Supabase</option>
+          </select>
+          <script>
+            (() => {
+              const themeSelect = document.getElementById("theme-select");
+              const storedTheme = localStorage.getItem("themeVariant");
+              if (themeSelect && storedTheme) themeSelect.value = storedTheme;
+              themeSelect.addEventListener("change", () => {
+                const newTheme = themeSelect.value;
+                document.documentElement.classList.forEach((c) => {
+                  if (c.startsWith("theme-"))
+                    document.documentElement.classList.remove(c);
+                });
+                if (newTheme) {
+                  document.documentElement.classList.add(`theme-${newTheme}`);
+                  localStorage.setItem("themeVariant", newTheme);
+                } else {
+                  localStorage.removeItem("themeVariant");
+                }
+              });
+            })();
+          </script>
+
+          <!-- Toggle dark mode -->
+          <button
+            type="button"
+            aria-label="Toggle dark mode"
+            data-tooltip="Toggle dark mode"
+            data-side="bottom"
+            onclick="document.dispatchEvent(new CustomEvent('basecoat:theme'))"
+            class="btn-icon-outline size-8"
+          >
+            <span class="hidden dark:block">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2m-7.07-14.07 1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2m-4.93 7.07-1.41-1.41M6.34 6.34 4.93 4.93" />
+              </svg>
+            </span>
+            <span class="block dark:hidden">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+              </svg>
+            </span>
+          </button>
+        </div>
+      </header>
+
+      <!-- ─── Konten halaman ───────────────────────────────── -->
+      <div class="p-4 md:p-6 xl:p-8">
+        <div class="max-w-screen-lg mx-auto">
+
+          <!-- Sapaan -->
+          <header class="flex flex-col gap-1 mb-8">
+            <h1 class="text-2xl font-bold tracking-tight">
+              Selamat datang, <%= user || 'Pengguna' %>
+            </h1>
+            <p class="text-muted-foreground">
+              Berikut ringkasan aktivitas pengadaan barang Anda.
+            </p>
+          </header>
+          
+          <section class="grid grid-cols-2 gap-4 mb-6">
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-blue-500">
+                    Total Usulan
+                  </p>
+
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.total %>
+                  </p>
+
+                  <p class="mt-4 text-sm text-foreground">
+                    Semua usulan yang pernah dibuat
+                  </p>
+                </div>
+                
+                <span class="badge-outline">
+                  Total
+                </span>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-amber-500">
+                    Draft
+                  </p>
+
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.draft %>
+                  </p>
+
+                  <p class="mt-4 text-sm text-foreground">
+                    Belum diajukan
+                  </p>
+                </div>
+                
+                <span class="badge-secondary">
+                  Draft
+                </span>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-blue-500">
+                    Menunggu Pengelola Aset
+                  </p>
+
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.submitted %>
+                  </p>
+
+                  <p class="mt-4 text-sm text-foreground">
+                    Usulan sudah dikirim ke Pengelola Aset
+                  </p>
+                </div>
+
+                <span class="badge-secondary">
+                  Submitted
+                </span>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-green-500">
+                     Disetujui
+                  </p>
+
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.approved %>
+                  </p>
+
+                  <p class="mt-4 text-sm text-foreground">
+                    Sudah disetujui
+                  </p>
+                </div>
+
+                <span class="badge-primary">
+                  Approved
+                </span>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-red-500">
+                    Ditolak
+                  </p>
+
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.rejected %>
+                  </p>
+
+                  <p class="mt-4 text-sm text-foreground">
+                    Tidak disetujui
+                  </p>
+                </div>
+
+                <span class="badge-destructive">
+                  Rejected
+                </span>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-purple-500">
+                    Selesai
+                  </p>
+
+                  <p class="mt-4 text-3xl font-bold">
+                    <%= summary.completed %>
+                  </p>
+
+                  <p class="mt-4 text-sm text-foreground">
+                    Pengadaan selesai
+                  </p>
+              </div>
+
+              <span class="badge-primary">
+                Completed
+              </span>
+            </div>
+          </div>
+
+        </section>
+
+        <section class="grid grid-cols-2 gap-4 mb-6">
+
+          <div class="card p-4">
+            <div class="flex items-start justify-between gap-3">
+
+              <div>
+                <p class="text-sm font-semibold text-blue-500">
+                  Total Item Barang
+                </p>
+
+                <p class="mt-4 text-3xl font-bold">
+                  <%= totalItem %>
+                </p>
+
+                <p class="mt-4 text-sm text-foreground">
+                  Total unit barang yang diajukan
+                </p>
+              </div>
+
+              <span class="badge-outline">
+                Barang
+              </span>
+
+            </div>
+          </div>
+
+          <div class="card p-4">
+            <div class="flex items-start justify-between gap-3">
+
+              <div>
+                <p class="text-sm font-semibold text-green-500">
+                  Total Estimasi Biaya
+                </p>
+
+                <p class="mt-4 text-2xl font-bold">
+                  <%= formatRupiah(totalBiaya) %>
+                </p>
+
+                <p class="mt-4 text-sm text-foreground">
+                  Akumulasi seluruh usulan
+                </p>
+              </div>
+
+              <span class="badge-primary">
+                Anggaran
+              </span>
+
+            </div>
+          </div>
+
+        </section>
+        
+          <!-- ── Panduan singkat ── -->
+          <div class="card">
+            <header>
+              <h2>Panduan singkat</h2>
+              <p>Langkah-langkah mengajukan usulan pengadaan barang.</p>
+            </header>
+            <section>
+              <ol class="grid gap-4">
+                <li class="flex items-start gap-3">
+                  <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold mt-0.5">1</span>
+                  <div>
+                    <p class="text-sm font-medium">Buat usulan baru</p>
+                    <p class="text-xs text-muted-foreground mt-0.5">
+                      Klik <strong>Buat Usulan Baru</strong>, isi judul dan daftar barang yang dibutuhkan beserta spesifikasi dan estimasi harga.
+                    </p>
+                  </div>
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold mt-0.5">2</span>
+                  <div>
+                    <p class="text-sm font-medium">Ajukan ke Pengelola Aset</p>
+                    <p class="text-xs text-muted-foreground mt-0.5">
+                      Simpan sebagai <em>draft</em> bila belum siap, atau langsung klik <strong>Ajukan Usulan</strong> untuk mengirim ke Pengelola Aset.
+                    </p>
+                  </div>
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold mt-0.5">3</span>
+                  <div>
+                    <p class="text-sm font-medium">Pantau status usulan</p>
+                    <p class="text-xs text-muted-foreground mt-0.5">
+                      Buka <strong>Daftar Usulan</strong> untuk memantau apakah usulan Anda sudah diproses, disetujui, atau ditolak oleh Wakil Dekan.
+                    </p>
+                  </div>
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold mt-0.5">4</span>
+                  <div>
+                    <p class="text-sm font-medium">Unduh laporan rekapan</p>
+                    <p class="text-xs text-muted-foreground mt-0.5">
+                      Gunakan <strong>Unduh Laporan PDF</strong> kapan saja untuk mendapatkan rekap seluruh riwayat pengajuan Anda dalam format PDF.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+            </section>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <div id="toaster" class="toaster"></div>
+  </body>
+</html>

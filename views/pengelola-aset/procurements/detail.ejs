@@ -2,55 +2,74 @@
 <%
   const currentRoles = currentUser?.roles || [];
   const canDecideProcurement = currentRoles.includes('Wakil Dekan') || currentRoles.includes('Admin');
+  const badgeClass = (status) => status === 'rejected' ? 'badge-destructive' : (status === 'approved' || status === 'completed' ? 'badge-primary' : 'badge-secondary');
 %>
-<div class="fw-card">
-  <h1 class="fw-title"><%= procurement.title %></h1>
-  <p class="fw-subtitle">No: <%= procurement.request_number %> · Status: <span class="fw-badge <%= procurement.status %>"><%= procurement.status %></span></p>
-</div>
-<div class="fw-card">
-  <h2>Data Permohonan</h2>
-  <table class="fw-table">
-    <tr><th>Dibuat oleh</th><td><%= procurement.created_by_name || '-' %></td></tr>
-    <tr><th>Created at</th><td><%= procurement.created_at || '-' %></td></tr>
-    <tr><th>Updated at / status update</th><td><%= procurement.updated_at || '-' %></td></tr>
-  </table>
-</div>
-<div class="fw-card">
-  <h2>Item Pengadaan</h2>
-  <table class="fw-table">
-    <thead><tr><th>Nama Barang</th><th>Spesifikasi</th><th>Jumlah</th><th>Estimasi Harga</th><th>Subtotal</th></tr></thead>
-    <tbody>
-      <% items.forEach(item => { %>
-        <tr>
-          <td><%= item.name %></td>
-          <td><%= item.specification || '-' %></td>
-          <td><%= item.quantity %></td>
-          <td>Rp <%= rupiah(item.estimated_price) %></td>
-          <td>Rp <%= rupiah(Number(item.quantity) * Number(item.estimated_price || 0)) %></td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
-</div>
-<div class="fw-card">
-  <h2>Aksi</h2>
-  <div class="fw-action-stack">
-  <% if (procurement.status === 'draft') { %>
-    <form method="post" action="/procurements/<%= procurement.id %>/submit" style="display:inline"><button class="fw-btn primary" type="submit">Submit ke Wakil Dekan</button></form>
-  <% } %>
-  <% if (procurement.status === 'submitted' && canDecideProcurement) { %>
-    <form method="post" action="/procurements/<%= procurement.id %>/decision" style="display:inline"><input type="hidden" name="decision" value="approved"><button class="fw-btn primary" type="submit">Approve (Placeholder WD/Admin)</button></form>
-    <form method="post" action="/procurements/<%= procurement.id %>/decision" style="display:inline"><input type="hidden" name="decision" value="rejected"><button class="fw-btn danger" type="submit">Reject (Placeholder WD/Admin)</button></form>
-  <% } %>
-  <% if (procurement.status === 'approved') { %>
-    <a class="fw-btn primary" href="/procurements/<%= procurement.id %>/add-asset">Tambah Barang ke Aset</a>
-  <% } %>
+
+<section class="card p-6 mb-6">
+  <div class="flex items-start justify-between gap-4 flex-wrap">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight"><%= procurement.title %></h1>
+      <p class="mt-2 text-foreground">No: <%= procurement.request_number %></p>
+    </div>
+    <span class="<%= badgeClass(procurement.status) %>"><%= procurement.status %></span>
   </div>
-  <% if (procurement.status === 'approved') { %>
-    <p class="fw-inline-note">Permohonan tetap berstatus <strong>approved</strong> sampai seluruh pencatatan aset yang diperlukan selesai dilakukan.</p>
-  <% } %>
-  <% if (procurement.status === 'submitted' && !canDecideProcurement) { %>
-    <p class="fw-inline-note">Permohonan ini sedang menunggu keputusan dari Wakil Dekan atau Admin.</p>
-  <% } %>
-</div>
+</section>
+
+<section class="grid gap-6 lg:grid-cols-2 mb-6">
+  <div class="card p-6">
+    <h2 class="mb-4 text-lg font-semibold">Data Permohonan</h2>
+    <table class="table">
+      <tbody>
+        <tr><th>Dibuat oleh</th><td><%= procurement.created_by_name || '-' %></td></tr>
+        <tr><th>Created at</th><td><%= procurement.created_at || '-' %></td></tr>
+        <tr><th>Updated at / status update</th><td><%= procurement.updated_at || '-' %></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="card p-6">
+    <h2 class="mb-4 text-lg font-semibold">Aksi</h2>
+    <div class="flex gap-2 flex-wrap">
+      <% if (procurement.status === 'draft') { %>
+        <form method="post" action="/procurements/<%= procurement.id %>/submit"><button class="btn-primary" type="submit">Submit ke Wakil Dekan</button></form>
+      <% } %>
+      <% if (procurement.status === 'submitted' && canDecideProcurement) { %>
+        <form method="post" action="/procurements/<%= procurement.id %>/decision"><input type="hidden" name="decision" value="approved"><button class="btn-primary" type="submit">Approve</button></form>
+        <form method="post" action="/procurements/<%= procurement.id %>/decision"><input type="hidden" name="decision" value="rejected"><button class="btn-destructive" type="submit">Reject</button></form>
+      <% } %>
+      <% if (procurement.status === 'approved') { %>
+        <a class="btn-primary" href="/procurements/<%= procurement.id %>/add-asset">Tambah Barang ke Aset</a>
+      <% } %>
+    </div>
+    <% if (procurement.status === 'completed') { %>
+      <p class="mt-4 rounded-md border p-3 text-foreground">Permohonan ini sudah selesai dan barang sudah dicatat ke daftar aset.</p>
+    <% } %>
+    <% if (procurement.status === 'approved') { %>
+      <p class="mt-4 rounded-md border p-3 text-foreground">Permohonan sudah approved tetapi belum tercatat sebagai asset.</p>
+    <% } %>
+    <% if (procurement.status === 'submitted' && !canDecideProcurement) { %>
+      <p class="mt-4 rounded-md border p-3 text-foreground">Permohonan ini sedang menunggu keputusan dari Wakil Dekan atau Admin.</p>
+    <% } %>
+  </div>
+</section>
+
+<section class="card p-6">
+  <h2 class="mb-4 text-lg font-semibold">Item Pengadaan</h2>
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>Nama Barang</th><th>Spesifikasi</th><th>Jumlah</th><th>Estimasi Harga</th><th>Subtotal</th></tr></thead>
+      <tbody>
+        <% items.forEach(item => { %>
+          <tr>
+            <td><%= item.name %></td>
+            <td><%= item.specification || '-' %></td>
+            <td><%= item.quantity %></td>
+            <td>Rp <%= rupiah(item.estimated_price) %></td>
+            <td>Rp <%= rupiah(Number(item.quantity) * Number(item.estimated_price || 0)) %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
 <%- include('../partials/footer') %>

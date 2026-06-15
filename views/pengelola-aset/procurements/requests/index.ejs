@@ -1,31 +1,66 @@
 <%- include('../../partials/header', { title, flash }) %>
-<div class="fw-card">
-  <h1 class="fw-title">Daftar Usulan Pengadaan</h1>
-  <p class="fw-subtitle">Usulan dari Ketua Departemen yang diterima Pengelola Aset.</p>
-  <div class="fw-form-actions" style="margin-top:0;">
-    <a class="fw-btn primary" href="/procurements/report?report_type=requests">Lihat Rekap Usulan</a>
-    <a class="fw-btn" href="/procurements">Ke Permohonan</a>
+<% const badgeClass = (status) => status === 'rejected' ? 'badge-destructive' : 'badge-secondary'; %>
+<% const statusLabel = (status) => ({ submitted: 'Menunggu Pengelola Aset', rejected: 'Ditolak Pengelola Aset' }[status] || status); %>
+
+<section class="card p-6 mb-6">
+  <div class="flex items-start justify-between gap-4 flex-wrap">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight">Daftar Usulan Pengadaan</h1>
+      <p class="mt-2 text-foreground">Usulan dari Ketua Departemen yang diterima Pengelola Aset.</p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+      <a class="btn-primary" href="/procurements/report?report_type=requests">Lihat Rekap Usulan</a>
+      <a class="btn-outline" href="/procurements">Ke Permohonan</a>
+    </div>
   </div>
+</section>
+
+<!-- Search bar -->
+<div class="mb-4">
+  <form method="GET" action="/procurements/requests" style="display:flex;gap:8px;align-items:center;">
+    <input type="text" name="search" value="<%= search %>" placeholder="Cari nomor usulan, judul, atau barang..." class="input" style="flex:1;max-width:360px;" />
+    <button type="submit" class="btn-outline">Cari</button>
+    <% if (search) { %>
+    <a href="/procurements/requests" class="btn-ghost text-sm">Reset</a>
+    <% } %>
+  </form>
 </div>
-<div class="fw-card">
-  <p class="fw-inline-note" style="margin-top:0;margin-bottom:14px;">Gunakan daftar ini untuk meninjau usulan masuk sebelum diubah statusnya atau diteruskan menjadi permohonan pengadaan.</p>
-  <table class="fw-table">
-    <thead><tr><th>No Usulan</th><th>Barang</th><th>Spesifikasi</th><th>Jumlah</th><th>Pengusul</th><th>Status</th><th>Tanggal</th><th>Aksi</th></tr></thead>
-    <tbody>
-      <% if (!requests.length) { %><tr><td colspan="8">Belum ada data usulan.</td></tr><% } %>
-      <% requests.forEach(r => { %>
-        <tr>
-          <td><%= r.request_number %></td>
-          <td><%= r.name %></td>
-          <td><%= r.specification || '-' %></td>
-          <td><%= r.quantity %></td>
-          <td><%= r.employee_name || '-' %></td>
-          <td><span class="fw-badge <%= r.status %>"><%= r.status %></span></td>
-          <td><%= r.created_at || r.submitted_at || '-' %></td>
-          <td><a class="fw-btn" href="/procurements/requests/<%= r.id %>">Detail</a></td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
-</div>
+
+<section class="card p-6">
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>No Usulan</th><th>Judul</th><th>Item</th><th>Total Jumlah</th><th>Total Estimasi</th><th>Pengusul</th><th>Status</th><th>Tanggal</th><th>Aksi</th></tr></thead>
+      <tbody>
+        <% if (!requests.length) { %><tr><td colspan="9"><%= search ? 'Tidak ada hasil untuk "' + search + '"' : 'Belum ada data usulan.' %></td></tr><% } %>
+        <% requests.forEach(r => { %>
+          <tr>
+            <td><%= r.request_number %></td>
+            <td><%= r.title %></td>
+            <td><%= r.item_count %></td>
+            <td><%= r.total_quantity %></td>
+            <td>Rp <%= rupiah(r.total_estimated_price) %></td>
+            <td><%= r.employee_name || '-' %></td>
+            <td><span class="<%= badgeClass(r.status) %>"><%= statusLabel(r.status) %></span></td>
+            <td><%= new Date(r.created_at).toLocaleDateString('id-ID') %></td>
+            <td><a class="btn-sm-outline" href="/procurements/requests/<%= r.id %>">Detail</a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;font-size:14px;color:#6b7280;">
+    <span>Menampilkan <strong><%= requests.length %></strong> dari <strong><%= totalItems %></strong> usulan</span>
+    <% if (totalPages > 1) { %>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <a href="/procurements/requests?page=<%= Math.max(1, currentPage - 1) %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+         class="btn-sm-outline<%= currentPage <= 1 ? ' pointer-events-none opacity-50' : '' %>">← Prev</a>
+      <span>Hal <strong><%= currentPage %></strong> / <%= totalPages %></span>
+      <a href="/procurements/requests?page=<%= Math.min(totalPages, currentPage + 1) %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+         class="btn-sm-outline<%= currentPage >= totalPages ? ' pointer-events-none opacity-50' : '' %>">Next →</a>
+    </div>
+    <% } %>
+  </div>
+</section>
+
 <%- include('../../partials/footer') %>

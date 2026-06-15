@@ -1,20 +1,22 @@
 <%- include('../partials/header', { title, flash }) %>
-<div class="fw-card">
-  <h1 class="fw-title">Tambah Barang Hasil Pengadaan</h1>
-  <p class="fw-subtitle"><%= procurement.request_number %> · <%= procurement.title %></p>
-</div>
-<form class="fw-card fw-form-card" method="post" action="/procurements/<%= procurement.id %>/add-asset">
+
+<section class="card p-6 mb-6">
+  <h1 class="text-3xl font-bold tracking-tight">Tambah Barang Hasil Pengadaan</h1>
+  <p class="mt-2 text-foreground"><%= procurement.request_number %> - <%= procurement.title %></p>
+</section>
+
+<form class="card p-6 form" method="post" action="/procurements/<%= procurement.id %>/add-asset">
   <% const selectedItem = items.find((item) => Number(item.id) === Number(selectedItemId)) || items[0] || {}; %>
-  <div class="fw-form-header">
-    <h2 class="fw-form-title">Form Pencatatan Aset</h2>
-    <p class="fw-form-copy">Lengkapi data aset hasil pengadaan agar pencatatan barang masuk lebih rapi dan mudah ditelusuri.</p>
+  <div class="mb-6 border-b pb-4">
+    <h2 class="text-lg font-semibold">Form Pencatatan Aset</h2>
+    <p class="mt-1 text-sm text-foreground">Lengkapi data aset hasil pengadaan agar pencatatan barang masuk lebih rapi dan mudah ditelusuri.</p>
   </div>
 
-  <div class="fw-form-section">
-    <h3 class="fw-section-title">Sumber Pengadaan</h3>
-    <p class="fw-section-copy">Pilih item pengadaan yang sedang dicatat ke sistem aset. Untuk permohonan dengan lebih dari satu item, pencatatan dapat dilakukan bertahap.</p>
-    <div class="fw-grid">
-      <div class="fw-field">
+  <section class="card p-4 mb-4">
+    <h3 class="text-base font-semibold">Sumber Pengadaan</h3>
+    <p class="mt-1 mb-4 text-sm text-foreground">Pilih item pengadaan yang sedang dicatat ke sistem aset.</p>
+    <div class="grid gap-4 lg:grid-cols-2">
+      <div class="field">
         <label>Item Pengadaan</label>
         <select name="item_id" data-asset-item-select>
           <% items.forEach((item) => { %>
@@ -25,44 +27,45 @@
               data-estimated-price="<%= item.estimated_price || 0 %>"
               <%= Number(initialValues.item_id || selectedItemId) === Number(item.id) ? 'selected' : '' %>
             >
-              <%= item.name %> · qty <%= item.quantity %>
+              <%= item.name %> - qty <%= item.quantity %>
             </option>
           <% }) %>
         </select>
       </div>
-      <div class="fw-field">
-        <label>Ringkasan Item Terpilih</label>
-        <div class="fw-inline-note" data-asset-item-summary>
+      <div>
+        <p class="mb-2 text-sm font-semibold">Ringkasan Item Terpilih</p>
+        <div class="rounded-md border p-3 text-foreground" data-asset-item-summary>
           <strong><%= selectedItem.name || '-' %></strong>
           <span><%= selectedItem.specification || 'Belum ada spesifikasi tambahan.' %></span>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="fw-form-section">
-    <h3 class="fw-section-title">Identitas Aset</h3>
-    <p class="fw-section-copy">Data dasar ini dipakai untuk identifikasi barang di sistem aset.</p>
-    <div class="fw-grid">
-      <div class="fw-field"><label>Kode Aset</label><input name="code" required placeholder="AST-2026-001" value="<%= initialValues.code || '' %>"><p class="fw-field-tip">Gunakan kode unik yang konsisten dengan format aset kampus.</p></div>
-      <div class="fw-field"><label>Nama Barang</label><input name="name" data-asset-name required placeholder="Contoh: Scanner Arsip" value="<%= initialValues.name || '' %>"></div>
-      <div class="fw-field"><label>Brand/Merk</label><input name="brand" placeholder="Contoh: Canon" value="<%= initialValues.brand || '' %>"></div>
-      <div class="fw-field"><label>Model</label><input name="model" placeholder="Contoh: DR-C225" value="<%= initialValues.model || '' %>"></div>
-      <div class="fw-field"><label>Serial Number</label><input name="serial_number" placeholder="Masukkan nomor seri perangkat" value="<%= initialValues.serial_number || '' %>"></div>
-      <div class="fw-field"><label>Tanggal Perolehan</label><input name="acquisition_date" type="date" required value="<%= initialValues.acquisition_date || '' %>"></div>
-      <div class="fw-field"><label>Harga Perolehan</label><input name="acquisition_cost" data-asset-price type="number" min="0" step="0.01" value="<%= initialValues.acquisition_cost %>"></div>
+  <section class="card p-4 mb-4">
+    <h3 class="text-base font-semibold">Identitas Aset</h3>
+    <p class="mt-1 mb-4 text-sm text-foreground">Data dasar ini dipakai untuk identifikasi barang di sistem aset.</p>
+    <div class="grid gap-4 lg:grid-cols-2">
+      <div class="field"><label>Kode Aset</label><input name="code" type="text" required placeholder="AST-2026-001" value="<%= initialValues.code || '' %>"><small>Gunakan kode unik yang konsisten.</small></div>
+      <div class="field"><label>Nama Barang</label><input name="name" type="text" data-asset-name required placeholder="Contoh: Scanner Arsip" value="<%= initialValues.name || '' %>"></div>
+      <div class="field"><label>Brand/Merk</label><input name="brand" type="text" placeholder="Contoh: Canon" value="<%= initialValues.brand || '' %>"></div>
+      <div class="field"><label>Model</label><input name="model" type="text" placeholder="Contoh: DR-C225" value="<%= initialValues.model || '' %>"></div>
+      <div class="field"><label>Serial Number</label><input name="serial_number" type="text" placeholder="Masukkan nomor seri perangkat" value="<%= initialValues.serial_number || '' %>"></div>
+      <div class="field"><label>Tanggal Perolehan</label><input name="acquisition_date" type="date" required value="<%= initialValues.acquisition_date || '' %>"></div>
+      <div class="field"><label>Harga Perolehan</label><input name="acquisition_cost" data-asset-price type="number" min="0" step="0.01" value="<%= initialValues.acquisition_cost %>"></div>
     </div>
-  </div>
+  </section>
 
-  <div class="fw-form-section">
-    <h3 class="fw-section-title">Detail Teknis</h3>
-    <p class="fw-section-copy">Tambahkan spesifikasi utama untuk membedakan aset dengan barang serupa.</p>
-    <div class="fw-field"><label>Spesifikasi</label><textarea name="specification" data-asset-specification rows="5" placeholder="Contoh: ADF scanner 40 ppm, duplex, koneksi USB"><%= initialValues.specification || '' %></textarea></div>
-  </div>
+  <section class="card p-4">
+    <h3 class="text-base font-semibold">Detail Teknis</h3>
+    <p class="mt-1 mb-4 text-sm text-foreground">Tambahkan spesifikasi utama untuk membedakan aset dengan barang serupa.</p>
+    <div class="field"><label>Spesifikasi</label><textarea name="specification" data-asset-specification rows="5" placeholder="Contoh: ADF scanner 40 ppm, duplex, koneksi USB"><%= initialValues.specification || '' %></textarea></div>
+  </section>
 
-  <div class="fw-form-actions">
-    <a class="fw-btn" href="/procurements/<%= procurement.id %>">Kembali ke Detail</a>
-    <button class="fw-btn primary" type="submit">Simpan ke Assets & Equipments</button>
+  <div class="mt-6 flex gap-2 flex-wrap">
+    <a class="btn-outline" href="/procurements/<%= procurement.id %>">Kembali ke Detail</a>
+    <button class="btn-primary" type="submit">Simpan ke Assets & Equipments</button>
   </div>
 </form>
+
 <%- include('../partials/footer') %>

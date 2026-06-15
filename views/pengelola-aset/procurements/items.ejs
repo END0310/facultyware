@@ -1,16 +1,22 @@
 <%- include('../partials/header', { title, flash }) %>
-<div class="fw-card">
-  <h1 class="fw-title">Data Barang Pengadaan</h1>
-  <p class="fw-subtitle">Daftar item pengadaan diambil langsung dari API agar Pengelola Aset dapat memantau barang per permohonan.</p>
-  <div class="fw-form-actions" style="margin-top:0;">
-    <a class="fw-btn" href="/procurements">Kembali ke Permohonan</a>
-    <a class="fw-btn" href="/api/procurement-items" target="_blank" rel="noreferrer">Buka API JSON</a>
+
+<section class="card p-6 mb-6">
+  <div class="flex items-start justify-between gap-4 flex-wrap">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight">Data Barang Pengadaan</h1>
+      <p class="mt-2 text-foreground">Daftar item pengadaan diambil langsung dari API.</p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+      <a class="btn-outline" href="/procurements">Kembali ke Permohonan</a>
+      <a class="btn-primary" href="/api/procurement-items" target="_blank" rel="noreferrer">Buka API JSON</a>
+    </div>
   </div>
-</div>
-<div class="fw-card">
-  <p class="fw-inline-note" id="procurement-items-status" style="margin-top:0;margin-bottom:14px;">Memuat data barang pengadaan...</p>
-  <div style="overflow:auto;">
-    <table class="fw-table">
+</section>
+
+<section class="card p-6">
+  <p class="mb-4 rounded-md border p-3 text-foreground" id="procurement-items-status">Memuat data barang pengadaan...</p>
+  <div class="overflow-x-auto">
+    <table class="table">
       <thead>
         <tr>
           <th>No Permohonan</th>
@@ -24,13 +30,12 @@
         </tr>
       </thead>
       <tbody id="procurement-items-body">
-        <tr>
-          <td colspan="8">Memuat data...</td>
-        </tr>
+        <tr><td colspan="8">Memuat data...</td></tr>
       </tbody>
     </table>
   </div>
-</div>
+</section>
+
 <script>
   (function () {
     const statusEl = document.getElementById('procurement-items-status');
@@ -49,6 +54,12 @@
       return 'Rp ' + Number(value || 0).toLocaleString('id-ID');
     }
 
+    function badgeClass(status) {
+      if (status === 'rejected') return 'badge-destructive';
+      if (status === 'approved' || status === 'completed') return 'badge-primary';
+      return 'badge-secondary';
+    }
+
     fetch('/api/procurement-items', { headers: { Accept: 'application/json' } })
       .then(function (response) {
         if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -65,6 +76,7 @@
 
         statusEl.textContent = 'Menampilkan ' + rows.length + ' item barang pengadaan.';
         bodyEl.innerHTML = rows.map(function (item) {
+          const status = escapeHtml(item.procurement_status || '');
           return '<tr>' +
             '<td>' + escapeHtml(item.request_number || '-') + '</td>' +
             '<td>' + escapeHtml(item.procurement_title || '-') + '</td>' +
@@ -72,7 +84,7 @@
             '<td>' + escapeHtml(item.specification || '-') + '</td>' +
             '<td>' + escapeHtml(item.quantity || 0) + '</td>' +
             '<td>' + escapeHtml(formatRupiah(item.estimated_price)) + '</td>' +
-            '<td><span class="fw-badge ' + escapeHtml(item.procurement_status || '') + '">' + escapeHtml(item.procurement_status || '-') + '</span></td>' +
+            '<td><span class="' + badgeClass(item.procurement_status || '') + '">' + (status || '-') + '</span></td>' +
             '<td>' + escapeHtml(item.created_by_name || '-') + '</td>' +
             '</tr>';
         }).join('');
@@ -83,4 +95,5 @@
       });
   })();
 </script>
+
 <%- include('../partials/footer') %>
