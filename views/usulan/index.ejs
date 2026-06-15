@@ -239,7 +239,9 @@
                       <%
                         const statusMap = {
                           draft:     { label: 'Draft',     cls: 'badge-muted' },
-                          submitted: { label: 'Diajukan',  cls: 'badge-secondary' },
+                          pending_asset: { label: 'Menunggu Pengelola Aset', cls: 'badge-secondary' },
+                          asset_rejected: { label: 'Ditolak Pengelola Aset', cls: 'badge-destructive' },
+                          submitted: { label: 'Diajukan ke Wakil Dekan',  cls: 'badge-secondary' },
                           approved:  { label: 'Disetujui', cls: 'badge-default' },
                           rejected:  { label: 'Ditolak',   cls: 'badge-destructive' },
                           completed: { label: 'Selesai',   cls: 'badge-secondary' }

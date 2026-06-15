@@ -1,7 +1,7 @@
 const db = require('../../lib/db');
 const { applyProcurementDecision } = require('../../lib/procurement-assets');
 
-const requestStatuses = ['pending', 'approved', 'rejected'];
+const requestStatuses = ['pending_asset', 'submitted', 'asset_rejected'];
 const procurementStatuses = ['draft', 'submitted', 'approved', 'rejected', 'completed'];
 const reportTypes = ['requests', 'procurements', 'assets'];
 const assetStatuses = ['available', 'in_use', 'maintenance', 'disposed'];
@@ -95,32 +95,46 @@ const listRequests = async (req, res, next) => {
     const limit  = 10;
     const offset = (page - 1) * limit;
 
-    let whereClause = '';
+    let whereClause = `WHERE ep.status IN ('pending_asset', 'asset_rejected')`;
     const params = [];
 
     if (search) {
-      whereClause = 'WHERE er.request_number LIKE ? OR er.name LIKE ?';
+      whereClause += ' AND (ep.request_number LIKE ? OR ep.title LIKE ? OR item.name LIKE ?)';
       const like = `%${search}%`;
-      params.push(like, like);
+      params.push(like, like, like);
     }
 
     const [countRows] = await db.query(
-      `SELECT COUNT(*) AS total FROM equipment_requests er ${whereClause}`,
+      `SELECT COUNT(DISTINCT ep.id) AS total
+       FROM equipment_procurements ep
+       LEFT JOIN equipment_proc_items item ON item.equipment_proc_id = ep.id
+       ${whereClause}`,
       params
     );
     const totalItems = countRows[0].total;
     const totalPages = Math.max(1, Math.ceil(totalItems / limit));
 
     const [requests] = await db.query(`
-      SELECT er.*, emp.name AS employee_name, approver.name AS approved_by_name
-      FROM equipment_requests er
-      LEFT JOIN employees emp ON emp.id = er.employee_id
-      LEFT JOIN employees approver ON approver.id = er.approved_by
+      SELECT
+        ep.id,
+        ep.request_number,
+        ep.title,
+        ep.status,
+        ep.created_at,
+        ep.updated_at,
+        emp.name AS employee_name,
+        COUNT(item.id) AS item_count,
+        COALESCE(SUM(item.quantity), 0) AS total_quantity,
+        COALESCE(SUM(item.quantity * item.estimated_price), 0) AS total_estimated_price
+      FROM equipment_procurements ep
+      LEFT JOIN employees emp ON emp.id = ep.created_by
+      LEFT JOIN equipment_proc_items item ON item.equipment_proc_id = ep.id
       ${whereClause}
-      ORDER BY er.created_at DESC, er.id DESC
+      GROUP BY ep.id, emp.name
+      ORDER BY ep.created_at DESC, ep.id DESC
       LIMIT ? OFFSET ?
     `, [...params, limit, offset]);
-    res.render('pengelola-aset/procurements/requests/index', { title: 'Daftar Usulan Pengadaan', requests, search, currentPage: page, totalPages, totalItems });
+    res.render('pengelola-aset/procurements/requests/index', { title: 'Daftar Usulan Pengadaan', requests, rupiah, search, currentPage: page, totalPages, totalItems });
   } catch (err) {
     next(err);
   }
@@ -129,15 +143,15 @@ const listRequests = async (req, res, next) => {
 const detailRequest = async (req, res, next) => {
   try {
     const [rows] = await db.query(`
-      SELECT er.*, emp.name AS employee_name, approver.name AS approved_by_name
-      FROM equipment_requests er
-      LEFT JOIN employees emp ON emp.id = er.employee_id
-      LEFT JOIN employees approver ON approver.id = er.approved_by
-      WHERE er.id = ?
+      SELECT ep.*, emp.name AS employee_name
+      FROM equipment_procurements ep
+      LEFT JOIN employees emp ON emp.id = ep.created_by
+      WHERE ep.id = ?
       LIMIT 1
     `, [req.params.id]);
     if (!rows.length) return res.status(404).render('error', { message: 'Usulan tidak ditemukan', error: { status: 404, stack: '' } });
-    res.render('pengelola-aset/procurements/requests/detail', { title: 'Detail Usulan', request: rows[0], requestStatuses });
+    const items = await getProcurementItems(req.params.id);
+    res.render('pengelola-aset/procurements/requests/detail', { title: 'Detail Usulan', request: rows[0], items, requestStatuses, rupiah });
   } catch (err) {
     next(err);
   }
@@ -151,15 +165,16 @@ const updateRequestStatus = async (req, res, next) => {
   }
 
   try {
-    await db.query(`
-      UPDATE equipment_requests
-      SET status = ?,
-          approved_by = CASE WHEN ? = 'approved' THEN ? ELSE approved_by END,
-          approved_at = CASE WHEN ? = 'approved' THEN NOW() ELSE approved_at END,
-          updated_at = NOW()
-      WHERE id = ?
-    `, [status, status, currentEmployeeId(req), status, req.params.id]);
-    flash(req, 'success', 'Status usulan berhasil diperbarui.');
+    const [result] = await db.query(`
+      UPDATE equipment_procurements
+      SET status = ?, updated_at = NOW()
+      WHERE id = ? AND status = 'pending_asset'
+    `, [status, req.params.id]);
+    if (!result.affectedRows) {
+      flash(req, 'error', 'Usulan hanya bisa diproses saat masih menunggu Pengelola Aset.');
+      return res.redirect(`/procurements/requests/${req.params.id}`);
+    }
+    flash(req, 'success', status === 'submitted' ? 'Usulan berhasil diteruskan ke Wakil Dekan.' : 'Usulan berhasil ditolak.');
     res.redirect(`/procurements/requests/${req.params.id}`);
   } catch (err) {
     next(err);
@@ -228,11 +243,11 @@ const listProcurements = async (req, res, next) => {
     const limit  = 10;
     const offset = (page - 1) * limit;
 
-    let whereClause = '';
+    let whereClause = `WHERE ep.status NOT IN ('pending_asset', 'asset_rejected')`;
     const params = [];
 
     if (search) {
-      whereClause = 'WHERE ep.request_number LIKE ? OR ep.title LIKE ?';
+      whereClause += ' AND (ep.request_number LIKE ? OR ep.title LIKE ?)';
       const like = `%${search}%`;
       params.push(like, like);
     }
@@ -464,9 +479,15 @@ const addAssetFromProcurement = async (req, res, next) => {
 function buildReportWhere(query, reportType) {
   const clauses = [];
   const params = [];
+  if (reportType === 'requests') {
+    clauses.push(`ep.status IN ('pending_asset', 'submitted', 'asset_rejected')`);
+  }
+  if (reportType === 'procurements') {
+    clauses.push(`ep.status NOT IN ('pending_asset', 'asset_rejected')`);
+  }
   if (query.status) {
     if (reportType === 'requests' && requestStatuses.includes(query.status)) {
-      clauses.push('er.status = ?');
+      clauses.push('ep.status = ?');
       params.push(query.status);
     }
     if (reportType === 'procurements' && procurementStatuses.includes(query.status)) {
@@ -479,12 +500,12 @@ function buildReportWhere(query, reportType) {
     }
   }
   if (query.start_date) {
-    const dateField = reportType === 'requests' ? 'er.created_at' : reportType === 'assets' ? 'a.acquisition_date' : 'ep.created_at';
+    const dateField = reportType === 'requests' ? 'ep.created_at' : reportType === 'assets' ? 'a.acquisition_date' : 'ep.created_at';
     clauses.push(`DATE(${dateField}) >= ?`);
     params.push(query.start_date);
   }
   if (query.end_date) {
-    const dateField = reportType === 'requests' ? 'er.created_at' : reportType === 'assets' ? 'a.acquisition_date' : 'ep.created_at';
+    const dateField = reportType === 'requests' ? 'ep.created_at' : reportType === 'assets' ? 'a.acquisition_date' : 'ep.created_at';
     clauses.push(`DATE(${dateField}) <= ?`);
     params.push(query.end_date);
   }
@@ -497,12 +518,13 @@ async function getReportRows(filters) {
 
   if (reportType === 'requests') {
     const [rows] = await db.query(`
-      SELECT er.request_number, er.name, er.specification, er.quantity, er.status,
-             er.created_at, er.updated_at, emp.name AS employee_name
-      FROM equipment_requests er
-      LEFT JOIN employees emp ON emp.id = er.employee_id
+      SELECT ep.request_number, ep.title AS name, item.specification, item.quantity, ep.status,
+             ep.created_at, ep.updated_at, emp.name AS employee_name
+      FROM equipment_procurements ep
+      LEFT JOIN employees emp ON emp.id = ep.created_by
+      LEFT JOIN equipment_proc_items item ON item.equipment_proc_id = ep.id
       ${where}
-      ORDER BY er.created_at DESC, er.id DESC
+      ORDER BY ep.created_at DESC, ep.id DESC, item.id ASC
     `, params);
     return { reportType, rows };
   }

@@ -1,13 +1,14 @@
 <%- include('../../partials/header', { title, flash }) %>
-<% const badgeClass = (status) => status === 'rejected' ? 'badge-destructive' : (status === 'approved' ? 'badge-primary' : 'badge-secondary'); %>
+<% const badgeClass = (status) => status === 'asset_rejected' ? 'badge-destructive' : (status === 'submitted' ? 'badge-primary' : 'badge-secondary'); %>
+<% const statusLabel = (status) => ({ pending_asset: 'Menunggu Pengelola Aset', submitted: 'Diteruskan ke Wakil Dekan', asset_rejected: 'Ditolak Pengelola Aset' }[status] || status); %>
 
 <section class="card p-6 mb-6">
   <div class="flex items-start justify-between gap-4 flex-wrap">
     <div>
       <h1 class="text-3xl font-bold tracking-tight">Detail Usulan: <%= request.request_number %></h1>
-      <p class="mt-2 text-foreground">Kelola status usulan sebelum menjadi permohonan pengadaan.</p>
+      <p class="mt-2 text-foreground">Tinjau usulan Ketua Departemen sebelum diteruskan ke Wakil Dekan.</p>
     </div>
-    <span class="<%= badgeClass(request.status) %>"><%= request.status %></span>
+    <span class="<%= badgeClass(request.status) %>"><%= statusLabel(request.status) %></span>
   </div>
 </section>
 
@@ -16,31 +17,52 @@
     <h2 class="mb-4 text-lg font-semibold">Informasi Usulan</h2>
     <table class="table">
       <tbody>
-        <tr><th>Nama Barang</th><td><%= request.name %></td></tr>
-        <tr><th>Spesifikasi</th><td><%= request.specification || '-' %></td></tr>
-        <tr><th>Jumlah</th><td><%= request.quantity %></td></tr>
+        <tr><th>Judul</th><td><%= request.title %></td></tr>
+        <tr><th>No Usulan</th><td><%= request.request_number %></td></tr>
         <tr><th>Pengusul</th><td><%= request.employee_name || '-' %></td></tr>
-        <tr><th>Submitted</th><td><%= request.submitted_at || '-' %></td></tr>
-        <tr><th>Disetujui oleh</th><td><%= request.approved_by_name || '-' %></td></tr>
-        <tr><th>Approved at</th><td><%= request.approved_at || '-' %></td></tr>
+        <tr><th>Tanggal dibuat</th><td><%= request.created_at || '-' %></td></tr>
+        <tr><th>Terakhir diperbarui</th><td><%= request.updated_at || '-' %></td></tr>
       </tbody>
     </table>
   </div>
   <div class="card p-6">
     <h2 class="mb-4 text-lg font-semibold">Aksi Pengelola Aset</h2>
-    <form class="form" action="/procurements/requests/<%= request.id %>/status" method="post">
-      <div class="field">
-        <label>Status Usulan</label>
-        <select name="status" required>
-          <% requestStatuses.forEach(s => { %><option value="<%= s %>" <%= request.status === s ? 'selected' : '' %>><%= s %></option><% }) %>
-        </select>
-        <small>Pilih status terbaru agar proses pengadaan berikutnya sesuai alur.</small>
+    <% if (request.status === 'pending_asset') { %>
+      <div class="flex gap-2 flex-wrap">
+        <form action="/procurements/requests/<%= request.id %>/status" method="post">
+          <input type="hidden" name="status" value="submitted">
+          <button class="btn-primary" type="submit">Teruskan ke Wakil Dekan</button>
+        </form>
+        <form action="/procurements/requests/<%= request.id %>/status" method="post">
+          <input type="hidden" name="status" value="asset_rejected">
+          <button class="btn-outline" type="submit">Tolak Usulan</button>
+        </form>
       </div>
-      <div class="mt-4 flex gap-2 flex-wrap">
-        <button class="btn-primary" type="submit">Ubah Status</button>
-        <a class="btn-outline" href="/procurements/create?request_id=<%= request.id %>">Buat Permohonan dari Usulan</a>
-      </div>
-    </form>
+      <p class="mt-3 text-sm text-foreground">Usulan yang diteruskan akan masuk ke daftar permohonan Wakil Dekan.</p>
+    <% } else { %>
+      <p class="text-foreground">Usulan ini sudah diproses dengan status <strong><%= statusLabel(request.status) %></strong>.</p>
+    <% } %>
+  </div>
+</section>
+
+<section class="card p-6 mt-6">
+  <h2 class="mb-4 text-lg font-semibold">Daftar Barang Usulan</h2>
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>Nama Barang</th><th>Spesifikasi</th><th>Jumlah</th><th>Estimasi Harga</th><th>Subtotal</th></tr></thead>
+      <tbody>
+        <% if (!items.length) { %><tr><td colspan="5">Belum ada item pada usulan ini.</td></tr><% } %>
+        <% items.forEach(item => { %>
+          <tr>
+            <td><%= item.name %></td>
+            <td><%= item.specification || '-' %></td>
+            <td><%= item.quantity %></td>
+            <td>Rp <%= rupiah(item.estimated_price) %></td>
+            <td>Rp <%= rupiah((item.quantity || 0) * (item.estimated_price || 0)) %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
   </div>
 </section>
 

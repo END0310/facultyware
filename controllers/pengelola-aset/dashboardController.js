@@ -1,16 +1,75 @@
 const db = require('../../lib/db');
 
 const emptySummary = () => ({
-  requests: { total: 0, pending: 0, approved: 0, rejected: 0 },
-  procurements: { total: 0, draft: 0, submitted: 0, approved: 0, rejected: 0, completed: 0 },
+  requests: { total: 0, pending_asset: 0, submitted: 0, asset_rejected: 0 },
+  procurements: { total: 0, draft: 0, pending_asset: 0, submitted: 0, approved: 0, rejected: 0, completed: 0 },
   assets: { total: 0, totalCost: 0 },
   recentProcurements: [],
   recentRequests: []
 });
 
+function formatRupiah(angka) {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    maximumFractionDigits: 0,
+  }).format(angka);
+}
+
+async function renderKetuaDepartemenHome(req, res, next) {
+  try {
+    const userId = req.session.employeeId || req.session.userId;
+    const summary = {
+      total: 0,
+      draft: 0,
+      pending_asset: 0,
+      asset_rejected: 0,
+      submitted: 0,
+      approved: 0,
+      rejected: 0,
+      completed: 0,
+    };
+
+    const [statusRows] = await db.query(`
+      SELECT status, COUNT(*) total
+      FROM equipment_procurements
+      WHERE created_by = ?
+      GROUP BY status
+    `, [userId]);
+
+    statusRows.forEach((row) => {
+      summary.total += Number(row.total || 0);
+      if (Object.prototype.hasOwnProperty.call(summary, row.status)) {
+        summary[row.status] = Number(row.total || 0);
+      }
+    });
+
+    const [aggregateRows] = await db.query(`
+      SELECT
+        COALESCE(SUM(epi.quantity), 0) AS totalItem,
+        COALESCE(SUM(epi.quantity * epi.estimated_price), 0) AS totalBiaya
+      FROM equipment_procurements ep
+      LEFT JOIN equipment_proc_items epi ON ep.id = epi.equipment_proc_id
+      WHERE ep.created_by = ?
+    `, [userId]);
+
+    res.render('home', {
+      title: 'Home',
+      user: req.session.username,
+      summary,
+      totalItem: Number(aggregateRows[0]?.totalItem || 0),
+      totalBiaya: Number(aggregateRows[0]?.totalBiaya || 0),
+      formatRupiah,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 const home = async (req, res, next) => {
   const user = req.session.user || null;
   const roles = user?.roles || [];
+  const isKetuaDepartemen = roles.includes('Ketua Departemen') || roles.includes('ketua_departemen');
   const isPengelolaAset = roles.includes('Pengelola Aset');
   const isAdmin = roles.includes('Admin');
   const isWakilDekan = roles.includes('Wakil Dekan') || roles.includes('wakildekan');
@@ -21,6 +80,10 @@ const home = async (req, res, next) => {
 
   if (isWakilDekan && !isPengelolaAset) {
     return res.redirect('/wakildekan/permohonan');
+  }
+
+  if (isKetuaDepartemen && !isPengelolaAset) {
+    return renderKetuaDepartemenHome(req, res, next);
   }
 
   if (!isPengelolaAset) {
@@ -35,7 +98,8 @@ const home = async (req, res, next) => {
   try {
     const [requestStatusRows] = await db.query(`
       SELECT status, COUNT(*) AS total
-      FROM equipment_requests
+      FROM equipment_procurements
+      WHERE status IN ('pending_asset', 'submitted', 'asset_rejected')
       GROUP BY status
     `);
 
@@ -80,8 +144,17 @@ const home = async (req, res, next) => {
     summary.recentProcurements = recentProcurements;
 
     const [recentRequests] = await db.query(`
-      SELECT id, request_number, name, quantity, status, created_at
-      FROM equipment_requests
+      SELECT
+        ep.id,
+        ep.request_number,
+        ep.title,
+        ep.status,
+        ep.created_at,
+        COALESCE(SUM(item.quantity), 0) AS total_quantity
+      FROM equipment_procurements ep
+      LEFT JOIN equipment_proc_items item ON item.equipment_proc_id = ep.id
+      WHERE ep.status IN ('pending_asset', 'submitted', 'asset_rejected')
+      GROUP BY ep.id
       ORDER BY created_at DESC, id DESC
       LIMIT 5
     `);
