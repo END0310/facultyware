@@ -193,59 +193,154 @@ const downloadPDF = async (req, res) => {
         `;
         const [rows] = await db.query(query);
 
-        const doc = new PDFDocument({ margin: 30, size: 'A4' });
+        const margin = 50;
+        const doc = new PDFDocument({ margin, size: 'A4', bufferPages: true });
         
         res.setHeader('Content-disposition', 'attachment; filename="laporan-pengadaan-wakildekan.pdf"');
         res.setHeader('Content-type', 'application/pdf');
         
         doc.pipe(res);
 
-        doc.fontSize(14).font('Helvetica-Bold').text('LAPORAN REKAPAN KEPUTUSAN PENGADAAN BARANG - WAKIL DEKAN', { align: 'center' });
-        doc.moveDown(2);
+        const pageWidth = doc.page.width;
+        const contentWidth = pageWidth - margin * 2;
+        const now = new Date();
+        const bulanIndo = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+        const tanggalCetak = `${now.getDate()} ${bulanIndo[now.getMonth()]} ${now.getFullYear()}`;
 
-        const tableTop = 100;
-        const col1 = 30;
-        const col2 = 60;
-        const col3 = 180;
-        const col4 = 360;
-        const col5 = 450;
-        const col6 = 520;
+        // === HEADER / KOP SURAT ===
+        doc.fontSize(13).font('Helvetica-Bold').text('FAKULTAS ILMU KOMPUTER', margin, margin, { align: 'center', width: contentWidth });
+        doc.fontSize(10).font('Helvetica').text('UNIVERSITAS', { align: 'center', width: contentWidth });
+        doc.moveDown(0.3);
+        doc.moveTo(margin, doc.y).lineTo(pageWidth - margin, doc.y).lineWidth(2).stroke();
+        doc.moveDown(0.2);
+        doc.moveTo(margin, doc.y).lineTo(pageWidth - margin, doc.y).lineWidth(0.5).stroke();
+        doc.moveDown(1.2);
 
-        doc.fontSize(10).font('Helvetica-Bold');
-        doc.text('No', col1, tableTop);
-        doc.text('Nomor Request', col2, tableTop);
-        doc.text('Judul Pengadaan', col3, tableTop);
-        doc.text('Diajukan Oleh', col4, tableTop);
-        doc.text('Tanggal', col5, tableTop);
-        doc.text('Status', col6, tableTop);
+        // === TITLE ===
+        doc.fontSize(12).font('Helvetica-Bold').text('LAPORAN REKAPAN KEPUTUSAN PENGADAAN BARANG', { align: 'center', width: contentWidth, underline: true });
+        doc.moveDown(0.3);
+        doc.fontSize(10).font('Helvetica').text(`Periode: Seluruh Data | Dicetak: ${tanggalCetak}`, { align: 'center', width: contentWidth });
+        doc.moveDown(1.5);
+
+        // === TABLE ===
+        const colWidths = [30, 80, 155, 90, 70, 70];
+        const colX = [margin];
+        for (let i = 1; i < colWidths.length; i++) {
+            colX.push(colX[i - 1] + colWidths[i - 1]);
+        }
+        const headers = ['No', 'Nomor Request', 'Judul Pengadaan', 'Diajukan Oleh', 'Tanggal', 'Status'];
+        const rowHeight = 22;
+        const headerBg = '#2c3e50';
+        const headerColor = '#ffffff';
+
+        function drawTableHeader(yPos) {
+            // Header background
+            doc.rect(margin, yPos, contentWidth, rowHeight + 4).fill(headerBg);
+            doc.fillColor(headerColor).font('Helvetica-Bold').fontSize(9);
+            headers.forEach((h, i) => {
+                doc.text(h, colX[i] + 5, yPos + 6, { width: colWidths[i] - 10, align: 'left' });
+            });
+            doc.fillColor('#000000');
+            return yPos + rowHeight + 4;
+        }
+
+        let y = drawTableHeader(doc.y);
+
+        doc.font('Helvetica').fontSize(8.5);
         
-        doc.moveTo(30, tableTop + 15).lineTo(565, tableTop + 15).stroke();
+        let approvedCount = 0;
+        let rejectedCount = 0;
 
-        let y = tableTop + 25;
-        doc.font('Helvetica');
-        
         rows.forEach((row, i) => {
-            if (y > 750) {
+            if (y > 720) {
                 doc.addPage();
-                y = 50;
+                y = drawTableHeader(margin);
+                doc.font('Helvetica').fontSize(8.5);
             }
-            
+
+            // Alternate row background
+            if (i % 2 === 0) {
+                doc.rect(margin, y, contentWidth, rowHeight).fill('#f8f9fa');
+            }
+
+            // Row borders
+            doc.rect(margin, y, contentWidth, rowHeight).lineWidth(0.3).stroke('#dee2e6');
+
             const reqNum = row.request_number || '-';
             const title = row.title || '-';
             const name = row.created_by_name || '-';
-            const date = new Date(row.created_at).toLocaleDateString('id-ID');
-            let status = row.status === 'approved' ? 'Disetujui' : (row.status === 'rejected' ? 'Ditolak' : row.status);
+            const date = new Date(row.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            let status = 'Diajukan';
+            if (row.status === 'approved') { status = 'Disetujui'; approvedCount++; }
+            else if (row.status === 'rejected') { status = 'Ditolak'; rejectedCount++; }
 
-            doc.text(i + 1, col1, y);
-            doc.text(reqNum, col2, y);
-            doc.text(title.substring(0, 30), col3, y);
-            doc.text(name.substring(0, 15), col4, y);
-            doc.text(date, col5, y);
-            doc.text(status, col6, y);
-            
-            y += 20;
-            doc.moveTo(30, y - 5).lineTo(565, y - 5).lineWidth(0.5).stroke();
+            doc.fillColor('#333333');
+            doc.text(String(i + 1), colX[0] + 5, y + 5, { width: colWidths[0] - 10 });
+            doc.font('Helvetica').text(reqNum, colX[1] + 5, y + 5, { width: colWidths[1] - 10 });
+            doc.text(title, colX[2] + 5, y + 5, { width: colWidths[2] - 10, ellipsis: true, height: rowHeight - 4 });
+            doc.text(name, colX[3] + 5, y + 5, { width: colWidths[3] - 10, ellipsis: true, height: rowHeight - 4 });
+            doc.text(date, colX[4] + 5, y + 5, { width: colWidths[4] - 10 });
+
+            // Status with color
+            if (row.status === 'approved') {
+                doc.fillColor('#16a34a');
+            } else if (row.status === 'rejected') {
+                doc.fillColor('#dc2626');
+            }
+            doc.font('Helvetica-Bold').text(status, colX[5] + 5, y + 5, { width: colWidths[5] - 10 });
+            doc.font('Helvetica').fillColor('#333333');
+
+            y += rowHeight;
         });
+
+        // Bottom border
+        doc.moveTo(margin, y).lineTo(pageWidth - margin, y).lineWidth(1).stroke('#2c3e50');
+
+        // === SUMMARY ===
+        y += 20;
+        if (y > 700) {
+            doc.addPage();
+            y = margin;
+        }
+
+        doc.font('Helvetica-Bold').fontSize(10).fillColor('#000000');
+        doc.text('Ringkasan:', margin, y);
+        y += 18;
+        doc.font('Helvetica').fontSize(9);
+        doc.text(`Total Permohonan Diproses  : ${rows.length}`, margin + 10, y);
+        y += 15;
+        doc.fillColor('#16a34a').text(`Disetujui                  : ${approvedCount}`, margin + 10, y);
+        y += 15;
+        doc.fillColor('#dc2626').text(`Ditolak                    : ${rejectedCount}`, margin + 10, y);
+        doc.fillColor('#000000');
+
+        // === SIGNATURE ===
+        y += 40;
+        if (y > 650) {
+            doc.addPage();
+            y = margin;
+        }
+
+        const signX = pageWidth - margin - 200;
+        doc.font('Helvetica').fontSize(9).text(tanggalCetak, signX, y, { width: 200, align: 'center' });
+        y += 15;
+        doc.font('Helvetica-Bold').fontSize(9).text('Wakil Dekan,', signX, y, { width: 200, align: 'center' });
+        y += 60;
+        doc.moveTo(signX + 20, y).lineTo(signX + 180, y).lineWidth(0.5).stroke();
+        y += 5;
+        doc.font('Helvetica').fontSize(8).text('NIP. ____________________', signX, y, { width: 200, align: 'center' });
+
+        // === PAGE NUMBERS ===
+        const totalPages = doc.bufferedPageRange().count;
+        for (let i = 0; i < totalPages; i++) {
+            doc.switchToPage(i);
+            doc.fontSize(7).font('Helvetica').fillColor('#999999');
+            doc.text(
+                `Halaman ${i + 1} dari ${totalPages} — Dicetak oleh Sistem FacultyWare pada ${tanggalCetak}`,
+                margin, doc.page.height - 30,
+                { width: contentWidth, align: 'center' }
+            );
+        }
 
         doc.end();
     } catch (error) {

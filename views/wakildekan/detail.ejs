@@ -170,31 +170,31 @@
           </div>
           <% } %>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Informasi Permohonan -->
-            <div class="col-span-1 md:col-span-1">
-              <div class="card p-5">
-                <h3 class="font-semibold text-lg mb-4">Informasi</h3>
-                <dl class="space-y-4 text-sm">
-                  <div>
-                    <dt class="text-muted-foreground mb-1">Nomor Request</dt>
-                    <dd class="font-mono font-medium"><%= permohonan.request_number %></dd>
+            <div class="col-span-1 lg:col-span-1">
+              <div class="card" style="padding: 1.75rem 2rem;">
+                <h3 class="font-semibold text-lg mb-5 pb-3 border-b">Informasi Permohonan</h3>
+                <dl class="space-y-5 text-sm">
+                  <div class="flex flex-col gap-1">
+                    <dt class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Nomor Request</dt>
+                    <dd class="font-mono font-semibold text-base"><%= permohonan.request_number %></dd>
                   </div>
-                  <div>
-                    <dt class="text-muted-foreground mb-1">Judul</dt>
-                    <dd class="font-medium"><%= permohonan.title %></dd>
+                  <div class="flex flex-col gap-1">
+                    <dt class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Judul Pengadaan</dt>
+                    <dd class="font-semibold"><%= permohonan.title %></dd>
                   </div>
-                  <div>
-                    <dt class="text-muted-foreground mb-1">Diajukan Oleh</dt>
+                  <div class="flex flex-col gap-1">
+                    <dt class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Diajukan Oleh</dt>
                     <dd class="font-medium"><%= permohonan.created_by_name %></dd>
                   </div>
-                  <div>
-                    <dt class="text-muted-foreground mb-1">Tanggal</dt>
-                    <dd class="font-medium"><%= new Date(permohonan.created_at).toLocaleDateString('id-ID') %></dd>
+                  <div class="flex flex-col gap-1">
+                    <dt class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Tanggal Pengajuan</dt>
+                    <dd class="font-medium"><%= new Date(permohonan.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %></dd>
                   </div>
-                  <div>
-                    <dt class="text-muted-foreground mb-1">Status</dt>
-                    <dd>
+                  <div class="flex flex-col gap-1">
+                    <dt class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</dt>
+                    <dd class="mt-0.5">
                       <%
                         let badgeCls = 'badge-outline';
                         let label = permohonan.status;
@@ -210,12 +210,18 @@
                 </dl>
 
                 <% if (permohonan.status === 'submitted') { %>
-                <div class="mt-6 flex flex-col gap-2 pt-6 border-t">
-                  <form action="/wakildekan/permohonan/<%= permohonan.id %>/approve" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menyetujui permohonan ini?');">
-                    <button type="submit" class="btn w-full" style="background-color: #16a34a; color: white;">Setujui</button>
+                <div class="mt-6 flex flex-col gap-3 pt-6 border-t">
+                  <form id="form-approve" action="/wakildekan/permohonan/<%= permohonan.id %>/approve" method="POST">
+                    <button type="button" onclick="openConfirmDialog('approve')" class="btn w-full gap-2" style="background-color: #16a34a; border-color: #16a34a; color: white;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      Setujui Permohonan
+                    </button>
                   </form>
-                  <form action="/wakildekan/permohonan/<%= permohonan.id %>/reject" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menolak permohonan ini?');">
-                    <button type="submit" class="btn-destructive w-full">Tolak</button>
+                  <form id="form-reject" action="/wakildekan/permohonan/<%= permohonan.id %>/reject" method="POST">
+                    <button type="button" onclick="openConfirmDialog('reject')" class="btn-destructive w-full gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                      Tolak Permohonan
+                    </button>
                   </form>
                 </div>
                 <% } %>
@@ -223,21 +229,22 @@
             </div>
 
             <!-- Item List -->
-            <div class="col-span-1 md:col-span-2">
+            <div class="col-span-1 lg:col-span-2">
               <div class="card p-0 overflow-hidden">
-                <div class="p-5 border-b bg-muted/20">
+                <div class="border-b bg-muted/20" style="padding: 1.25rem 2rem;">
                   <h3 class="font-semibold text-lg">Daftar Barang</h3>
+                  <p class="text-xs text-muted-foreground mt-0.5">Rincian barang yang diminta dalam permohonan ini</p>
                 </div>
                 <div class="overflow-x-auto">
                   <table class="w-full text-sm">
                     <thead>
                       <tr class="border-b bg-muted/50">
-                        <th class="px-4 py-3 text-left font-medium text-muted-foreground">No</th>
+                        <th class="py-3 text-left font-medium text-muted-foreground" style="padding-left:2rem; width:3.5rem;">No</th>
                         <th class="px-4 py-3 text-left font-medium text-muted-foreground">Nama Barang</th>
                         <th class="px-4 py-3 text-left font-medium text-muted-foreground">Spesifikasi</th>
-                        <th class="px-4 py-3 text-right font-medium text-muted-foreground">Jumlah</th>
+                        <th class="px-4 py-3 text-right font-medium text-muted-foreground" style="width:5rem;">Jumlah</th>
                         <th class="px-4 py-3 text-right font-medium text-muted-foreground">Estimasi Harga</th>
-                        <th class="px-4 py-3 text-right font-medium text-muted-foreground">Total</th>
+                        <th class="py-3 text-right font-medium text-muted-foreground" style="padding-right:2rem;">Total</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -248,23 +255,23 @@
                              grandTotal += itemTotal;
                         %>
                         <tr class="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                          <td class="px-4 py-3 text-muted-foreground"><%= i + 1 %></td>
+                          <td class="py-3 text-muted-foreground" style="padding-left:2rem;"><%= i + 1 %></td>
                           <td class="px-4 py-3 font-medium"><%= item.name %></td>
                           <td class="px-4 py-3 text-muted-foreground"><%= item.specification || '-' %></td>
-                          <td class="px-4 py-3 text-right"><%= item.quantity %></td>
+                          <td class="px-4 py-3 text-right tabular-nums"><%= item.quantity %></td>
                           <td class="px-4 py-3 text-right tabular-nums"><%= Number(item.estimated_price).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }) %></td>
-                          <td class="px-4 py-3 text-right tabular-nums font-medium"><%= Number(itemTotal).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }) %></td>
+                          <td class="py-3 text-right tabular-nums font-medium" style="padding-right:2rem;"><%= Number(itemTotal).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }) %></td>
                         </tr>
                         <% }) %>
                       <% } else { %>
                         <tr>
-                          <td colspan="6" class="px-4 py-8 text-center text-muted-foreground">Tidak ada item</td>
+                          <td colspan="6" class="py-10 text-center text-muted-foreground" style="padding-left:2rem; padding-right:2rem;">Tidak ada item</td>
                         </tr>
                       <% } %>
                     </tbody>
                   </table>
                 </div>
-                <div class="p-4 border-t bg-muted/20 flex justify-between items-center">
+                <div class="border-t bg-muted/20 flex justify-between items-center" style="padding: 1rem 2rem;">
                   <span class="font-semibold text-muted-foreground">Total Estimasi Keseluruhan</span>
                   <span class="text-lg font-bold tabular-nums text-foreground"><%= Number(grandTotal).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }) %></span>
                 </div>
@@ -275,5 +282,99 @@
         </div>
       </div>
     </main>
+
+    <!-- Custom Confirmation Modal -->
+    <% if (permohonan.status === 'submitted') { %>
+    <div id="confirm-overlay" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px);">
+      <div id="confirm-modal" style="background:var(--background, #1c1c1c); border:1px solid var(--border, #333); border-radius:1rem; width:100%; max-width:420px; margin:1rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); overflow:hidden;">
+        <div style="padding:2rem 2rem 1.5rem; text-align:center;">
+          <div id="dialog-icon-container" style="display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:50%; margin-bottom:1rem;"></div>
+          <h3 id="dialog-title" style="font-size:1.125rem; font-weight:600; margin:0 0 0.5rem; color:var(--foreground, #fff);"></h3>
+          <p id="dialog-description" style="font-size:0.875rem; color:var(--muted-foreground, #999); margin:0; line-height:1.6; max-width:320px; margin-left:auto; margin-right:auto;"></p>
+        </div>
+        <div style="display:flex; justify-content:center; gap:0.75rem; padding:1.25rem 2rem; border-top:1px solid var(--border, #333); background:var(--muted, rgba(255,255,255,0.03));">
+          <button type="button" id="dialog-cancel" class="btn-outline" style="padding:0.5rem 1.5rem; min-width:100px;">Batal</button>
+          <button type="button" id="dialog-confirm" class="btn" style="padding:0.5rem 1.5rem; min-width:120px;">Konfirmasi</button>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      #confirm-overlay.show {
+        display: flex !important;
+        animation: overlay-in 0.2s ease-out forwards;
+      }
+      #confirm-overlay.show #confirm-modal {
+        animation: modal-in 0.25s ease-out forwards;
+      }
+      #confirm-overlay.hiding {
+        animation: overlay-out 0.15s ease-in forwards;
+      }
+      #confirm-overlay.hiding #confirm-modal {
+        animation: modal-out 0.15s ease-in forwards;
+      }
+      @keyframes overlay-in { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes overlay-out { from { opacity: 1; } to { opacity: 0; } }
+      @keyframes modal-in { from { opacity: 0; transform: scale(0.9) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+      @keyframes modal-out { from { opacity: 1; transform: scale(1) translateY(0); } to { opacity: 0; transform: scale(0.9) translateY(10px); } }
+    </style>
+
+    <script>
+      const overlay = document.getElementById('confirm-overlay');
+      const dialogTitle = document.getElementById('dialog-title');
+      const dialogDesc = document.getElementById('dialog-description');
+      const dialogConfirm = document.getElementById('dialog-confirm');
+      const dialogCancel = document.getElementById('dialog-cancel');
+      const dialogIconContainer = document.getElementById('dialog-icon-container');
+      let pendingAction = null;
+
+      function openConfirmDialog(action) {
+        pendingAction = action;
+        const approveIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+        const rejectIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>';
+        const sm = (s) => s.replace(/width="\d+"/,'width="16"').replace(/height="\d+"/,'height="16"');
+
+        if (action === 'approve') {
+          dialogTitle.textContent = 'Setujui Permohonan';
+          dialogDesc.textContent = 'Apakah Anda yakin ingin menyetujui permohonan pengadaan ini? Tindakan ini akan mengubah status menjadi disetujui.';
+          dialogConfirm.className = 'btn';
+          dialogConfirm.style.cssText = 'padding:0.5rem 1.5rem; min-width:120px; background:#16a34a; border-color:#16a34a; color:#fff; display:inline-flex; align-items:center; gap:0.5rem;';
+          dialogConfirm.innerHTML = sm(approveIcon) + ' Ya, Setujui';
+          dialogIconContainer.style.cssText = 'display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:50%; margin-bottom:1rem; background:rgba(22,163,74,0.15); color:#22c55e;';
+          dialogIconContainer.innerHTML = approveIcon;
+        } else {
+          dialogTitle.textContent = 'Tolak Permohonan';
+          dialogDesc.textContent = 'Apakah Anda yakin ingin menolak permohonan pengadaan ini? Tindakan ini akan mengubah status menjadi ditolak.';
+          dialogConfirm.className = 'btn-destructive';
+          dialogConfirm.style.cssText = 'padding:0.5rem 1.5rem; min-width:120px; display:inline-flex; align-items:center; gap:0.5rem;';
+          dialogConfirm.innerHTML = sm(rejectIcon) + ' Ya, Tolak';
+          dialogIconContainer.style.cssText = 'display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:50%; margin-bottom:1rem; background:rgba(239,68,68,0.15); color:#ef4444;';
+          dialogIconContainer.innerHTML = rejectIcon;
+        }
+        overlay.classList.remove('hiding');
+        overlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeDialog() {
+        overlay.classList.add('hiding');
+        setTimeout(() => {
+          overlay.classList.remove('show','hiding');
+          overlay.style.display = 'none';
+          document.body.style.overflow = '';
+          pendingAction = null;
+        }, 150);
+      }
+
+      dialogCancel.addEventListener('click', closeDialog);
+      dialogConfirm.addEventListener('click', () => {
+        if (pendingAction === 'approve') document.getElementById('form-approve').submit();
+        else if (pendingAction === 'reject') document.getElementById('form-reject').submit();
+        closeDialog();
+      });
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) closeDialog(); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.classList.contains('show')) closeDialog(); });
+    </script>
+    <% } %>
   </body>
 </html>
