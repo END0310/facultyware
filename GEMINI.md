@@ -53,7 +53,7 @@ To protect a route with a specific permission (or any one of multiple permission
 const { checkPermission } = require('../middlewares/acl');
 
 // Single permission
-router.get('/admin/users', checkPermission('manage_users'), userController.list);
+router.get('/reports', checkPermission('view_reports'), reportController.index);
 
 // Multiple permissions (user must have at least one)
 router.get('/reports', checkPermission(['view_reports', 'manage_all']), reportController.index);

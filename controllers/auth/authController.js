@@ -56,10 +56,6 @@ const login = async (req, res, next) => {
       roles: req.session.roles
     };
 
-    if (req.session.roles.includes('Admin')) {
-      return res.redirect('/admin');
-    }
-
     if (req.session.roles.includes('Wakil Dekan') || req.session.roles.includes('wakildekan')) {
       return res.redirect('/wakildekan/permohonan');
     }

@@ -1,7 +1,7 @@
 <%- include('../partials/header', { title, flash }) %>
 <%
   const currentRoles = currentUser?.roles || [];
-  const canDecideProcurement = currentRoles.includes('Wakil Dekan') || currentRoles.includes('Admin');
+  const canDecideProcurement = currentRoles.includes('Wakil Dekan');
   const badgeClass = (status) => status === 'rejected' ? 'badge-destructive' : (status === 'approved' || status === 'completed' ? 'badge-primary' : 'badge-secondary');
 %>
 
@@ -47,7 +47,7 @@
       <p class="mt-4 rounded-md border p-3 text-foreground">Permohonan sudah approved tetapi belum tercatat sebagai asset.</p>
     <% } %>
     <% if (procurement.status === 'submitted' && !canDecideProcurement) { %>
-      <p class="mt-4 rounded-md border p-3 text-foreground">Permohonan ini sedang menunggu keputusan dari Wakil Dekan atau Admin.</p>
+      <p class="mt-4 rounded-md border p-3 text-foreground">Permohonan ini sedang menunggu keputusan dari Wakil Dekan.</p>
     <% } %>
   </div>
 </section>

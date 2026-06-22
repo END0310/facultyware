@@ -4,8 +4,8 @@ const controller = require('../../controllers/pengelola-aset/procurementControll
 const { isAuthenticated } = require('../../middlewares/auth');
 const { hasRole } = require('../../middlewares/acl');
 
-const asetRoles = ['Pengelola Aset', 'Pengelola Sistem', 'Admin'];
-const decisionRoles = ['Wakil Dekan', 'Admin'];
+const asetRoles = ['Pengelola Aset', 'Pengelola Sistem'];
+const decisionRoles = ['Wakil Dekan'];
 
 router.use(isAuthenticated);
 
@@ -21,7 +21,7 @@ router.get('/create', hasRole(asetRoles), controller.showCreateProcurement);
 router.get('/items', hasRole(asetRoles), controller.procurementItemsPage);
 router.post('/', hasRole(asetRoles), controller.createProcurement);
 router.get('/', hasRole(asetRoles), controller.listProcurements);
-router.get('/:id', hasRole(['Pengelola Aset', 'Pengelola Sistem', 'Admin', 'Wakil Dekan']), controller.detailProcurement);
+router.get('/:id', hasRole(['Pengelola Aset', 'Pengelola Sistem', 'Wakil Dekan']), controller.detailProcurement);
 router.post('/:id/submit', hasRole(asetRoles), controller.submitProcurement);
 router.post('/:id/decision', hasRole(decisionRoles), controller.decideProcurement);
 router.get('/:id/add-asset', hasRole(asetRoles), controller.showAddAsset);

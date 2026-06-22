@@ -5,7 +5,7 @@ const { isAuthenticated } = require('../../middlewares/auth');
 const { hasRole } = require('../../middlewares/acl');
 
 router.use(isAuthenticated);
-router.use(hasRole(['Pengelola Aset', 'Pengelola Sistem', 'Admin', 'Wakil Dekan']));
+router.use(hasRole(['Pengelola Aset', 'Pengelola Sistem', 'Wakil Dekan']));
 
 router.get('/procurement-items', controller.listProcurementItems);
 

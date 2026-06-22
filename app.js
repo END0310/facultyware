@@ -7,8 +7,6 @@ var session = require('express-session');
 var MySQLStore = require('express-mysql-session')(session);
 
 var authRouter = require('./routes/auth/index');
-var adminRouter = require('./routes/admin/index');
-var adminUsersRouter = require('./routes/admin/users');
 var pengelolaAsetDashboardRouter = require('./routes/pengelola-aset/dashboard');
 var procurementsRouter = require('./routes/pengelola-aset/procurements');
 var apiProcurementsRouter = require('./routes/pengelola-aset/apiProcurements');
@@ -66,8 +64,6 @@ app.use((req, res, next) => {
 
 app.use('/', authRouter);
 app.use('/', pengelolaAsetDashboardRouter);
-app.use('/admin', adminRouter);
-app.use('/admin/users', adminUsersRouter);
 app.use('/usulan', usulanRouter);
 app.use('/wakildekan', wakildekanRouter);
 app.use('/procurements', procurementsRouter);

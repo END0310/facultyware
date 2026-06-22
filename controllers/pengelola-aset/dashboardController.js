@@ -69,12 +69,7 @@ const home = async (req, res, next) => {
   const roles = user?.roles || [];
   const isKetuaDepartemen = roles.includes('Ketua Departemen') || roles.includes('ketua_departemen');
   const isPengelolaAset = roles.includes('Pengelola Aset');
-  const isAdmin = roles.includes('Admin');
   const isWakilDekan = roles.includes('Wakil Dekan') || roles.includes('wakildekan');
-
-  if (isAdmin && !isPengelolaAset) {
-    return res.redirect('/admin');
-  }
 
   if (isWakilDekan && !isPengelolaAset) {
     return res.redirect('/wakildekan/permohonan');

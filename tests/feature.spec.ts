@@ -7,7 +7,6 @@ const CREDENTIALS = {
   ketuaDepartemen: { email: 'ketua.departemen@facultyware.test', password: 'password123' },
   pengelolaAset:   { email: 'pengelola.aset@facultyware.test',   password: 'password123' },
   wakilDekan:      { email: 'wakil.dekan@facultyware.test',      password: 'password123' },
-  admin:           { email: 'admin@facultyware.test',            password: 'password123' },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -40,7 +39,7 @@ test.describe('Auth — Login & Logout', () => {
 
   test('menolak login dengan password salah', async ({ page }) => {
     await page.goto('/login');
-    await page.fill('#email', 'admin@facultyware.test');
+    await page.fill('#email', 'ketua.departemen@facultyware.test');
     await page.fill('#password', 'wrong-password');
     await page.click('button[type="submit"]');
     // Harus tetap di halaman login dan ada pesan error
@@ -49,15 +48,8 @@ test.describe('Auth — Login & Logout', () => {
     await expect(errorDiv.first()).toBeVisible({ timeout: 5000 });
   });
 
-  test('berhasil login sebagai admin', async ({ page }) => {
-    await login(page, 'admin');
-    // Admin di-redirect ke /admin setelah login
-    const url = page.url();
-    expect(url.includes('/admin') || url.includes('/home')).toBeTruthy();
-  });
-
   test('berhasil logout', async ({ page }) => {
-    await login(page, 'admin');
+    await login(page, 'ketuaDepartemen');
     await logout(page);
     await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
   });
@@ -446,16 +438,6 @@ test.describe('ACL — Kontrol Akses', () => {
     ).toBeTruthy();
   });
 
-  test('ketua departemen tidak bisa akses halaman admin', async ({ page }) => {
-    await login(page, 'ketuaDepartemen');
-    const response = await page.goto('/admin/users');
-    const url = page.url();
-    const status = response!.status();
-    expect(
-      url.includes('/login') || url.includes('/home') || status === 403
-    ).toBeTruthy();
-  });
-
   test('wakil dekan tidak bisa akses halaman pengelola aset', async ({ page }) => {
     await login(page, 'wakilDekan');
     const response = await page.goto('/procurements/requests');
@@ -484,32 +466,3 @@ test.describe('Dashboard — Wakil Dekan', () => {
   });
 });
 
-// =============================================================================
-// Admin — Manajemen Akun (+ Search + Pagination)
-// =============================================================================
-test.describe('Admin — Manajemen Akun', () => {
-  test.beforeEach(async ({ page }) => {
-    await login(page, 'admin');
-  });
-
-  test('menampilkan daftar user', async ({ page }) => {
-    await page.goto('/admin/users');
-    await expect(page.locator('table')).toBeVisible();
-  });
-
-  test('fitur pencarian user berfungsi', async ({ page }) => {
-    await page.goto('/admin/users');
-    const searchInput = page.locator('input[name="search"]');
-    if (await searchInput.count() > 0) {
-      await searchInput.fill('admin');
-      await page.click('button[type="submit"]');
-      await expect(page).toHaveURL(/search=admin/);
-    }
-  });
-
-  test('fitur pagination user tersedia', async ({ page }) => {
-    await page.goto('/admin/users');
-    const paginationInfo = page.locator('text=Menampilkan');
-    await expect(paginationInfo.first()).toBeVisible();
-  });
-});
