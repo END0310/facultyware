@@ -34,18 +34,6 @@
       })();
     </script>
 
-    <script>
-      (function () {
-        try {
-          const storedTheme = localStorage.getItem("themeVariant");
-          if (storedTheme)
-            document.documentElement.classList.add(`theme-${storedTheme}`);
-        } catch (event) {
-          console.error("Could not apply theme variant from localStorage", event);
-        }
-      })();
-    </script>
-
     <meta charset="utf-8" />
     <meta http-equiv="Content-Language" content="id" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -102,18 +90,15 @@
       })();
     </script>
 
-    <!-- ─── Sidebar ──────────────────────────────────────────── -->
     <%- include('partials/ketua_departemen_sidebar', { user }) %>
 
-    <!-- ─── Main ─────────────────────────────────────────────── -->
     <main id="content">
 
-      <!-- Top bar -->
       <header
         class="bg-background sticky inset-x-0 top-0 isolate flex shrink-0 items-center gap-2 border-b z-10"
       >
         <div class="flex h-14 w-full items-center gap-2 px-4">
-          <!-- Toggle sidebar -->
+
           <button
             type="button"
             onclick="document.dispatchEvent(new CustomEvent('basecoat:sidebar'))"
@@ -129,35 +114,6 @@
             </svg>
           </button>
 
-          <!-- Pilih tema warna -->
-          <select class="select h-8 leading-none" id="theme-select">
-            <option value="">Default</option>
-            <option value="claude">Claude</option>
-            <option value="doom-64">Doom 64</option>
-            <option value="supabase">Supabase</option>
-          </select>
-          <script>
-            (() => {
-              const themeSelect = document.getElementById("theme-select");
-              const storedTheme = localStorage.getItem("themeVariant");
-              if (themeSelect && storedTheme) themeSelect.value = storedTheme;
-              themeSelect.addEventListener("change", () => {
-                const newTheme = themeSelect.value;
-                document.documentElement.classList.forEach((c) => {
-                  if (c.startsWith("theme-"))
-                    document.documentElement.classList.remove(c);
-                });
-                if (newTheme) {
-                  document.documentElement.classList.add(`theme-${newTheme}`);
-                  localStorage.setItem("themeVariant", newTheme);
-                } else {
-                  localStorage.removeItem("themeVariant");
-                }
-              });
-            })();
-          </script>
-
-          <!-- Toggle dark mode -->
           <button
             type="button"
             aria-label="Toggle dark mode"
@@ -181,11 +137,9 @@
         </div>
       </header>
 
-      <!-- ─── Konten halaman ───────────────────────────────── -->
       <div class="p-4 md:p-6 xl:p-8">
         <div class="max-w-screen-lg mx-auto">
 
-          <!-- Sapaan -->
           <header class="flex flex-col gap-1 mb-8">
             <h1 class="text-2xl font-bold tracking-tight">
               Selamat datang, <%= user || 'Pengguna' %>
@@ -194,7 +148,7 @@
               Berikut ringkasan aktivitas pengadaan barang Anda.
             </p>
           </header>
-          
+
           <section class="grid grid-cols-2 gap-4 mb-6">
             <div class="card p-4">
               <div class="flex items-start justify-between gap-3">
@@ -211,7 +165,7 @@
                     Semua usulan yang pernah dibuat
                   </p>
                 </div>
-                
+
                 <span class="badge-outline">
                   Total
                 </span>
@@ -233,7 +187,7 @@
                     Belum diajukan
                   </p>
                 </div>
-                
+
                 <span class="badge-secondary">
                   Draft
                 </span>
@@ -381,8 +335,7 @@
           </div>
 
         </section>
-        
-          <!-- ── Panduan singkat ── -->
+
           <div class="card">
             <header>
               <h2>Panduan singkat</h2>
