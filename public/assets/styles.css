@@ -2426,6 +2426,17 @@
       color: var(--color-destructive);
     }
   }
+  .alert-success {
+    background-color: var(--color-success-subtle, #f0fdf4);
+    border-color: #86efac;
+    color: #166534;
+    &>svg {
+      color: currentcolor;
+    }
+    > section {
+      color: #166534;
+    }
+  }
 }
 @layer components {
   .badge, .badge-primary, .badge-secondary, .badge-destructive, .badge-outline {
