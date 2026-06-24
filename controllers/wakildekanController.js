@@ -208,8 +208,8 @@ const downloadPDF = async (req, res) => {
         const tanggalCetak = `${now.getDate()} ${bulanIndo[now.getMonth()]} ${now.getFullYear()}`;
 
         // === HEADER / KOP SURAT ===
-        doc.fontSize(13).font('Helvetica-Bold').text('FAKULTAS ILMU KOMPUTER', margin, margin, { align: 'center', width: contentWidth });
-        doc.fontSize(10).font('Helvetica').text('UNIVERSITAS', { align: 'center', width: contentWidth });
+        doc.fontSize(13).font('Helvetica-Bold').text('FAKULTAS TEKNOLOGI INFORMASI', margin, margin, { align: 'center', width: contentWidth });
+        doc.fontSize(10).font('Helvetica').text('UNIVERSITAS ANDALAS', { align: 'center', width: contentWidth });
         doc.moveDown(0.3);
         doc.moveTo(margin, doc.y).lineTo(pageWidth - margin, doc.y).lineWidth(2).stroke();
         doc.moveDown(0.2);
