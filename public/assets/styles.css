@@ -6317,3 +6317,191 @@ code.hljs {
     }
   }
 }
+
+/* =============================================================================
+   WAKIL DEKAN — Detail Permohonan (Custom Classes)
+   ============================================================================= */
+
+/* Card dengan padding yang lebih lebar */
+.detail-card {
+  padding: 1.75rem 2rem;
+}
+
+/* Tombol approve (hijau) */
+.btn-approve {
+  background-color: #16a34a;
+  border-color: #16a34a;
+  color: white;
+}
+
+/* Header dan footer section tabel */
+.table-section-header {
+  padding: 1.25rem 2rem;
+}
+
+.table-section-footer {
+  padding: 1rem 2rem;
+}
+
+/* Kolom pertama tabel (padding kiri lebih lebar) */
+.table-cell-first {
+  padding-left: 2rem;
+  width: 3.5rem;
+}
+
+/* Kolom terakhir tabel (padding kanan lebih lebar) */
+.table-cell-last {
+  padding-right: 2rem;
+}
+
+/* Kolom jumlah */
+.table-col-qty {
+  width: 5rem;
+}
+
+/* Cell kosong "Tidak ada item" */
+.table-cell-empty {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* ── Modal Konfirmasi ── */
+
+/* Overlay (latar belakang gelap) */
+.confirm-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+/* Kotak modal */
+.confirm-modal {
+  background: var(--background, #1c1c1c);
+  border: 1px solid var(--border, #333);
+  border-radius: 1rem;
+  width: 100%;
+  max-width: 420px;
+  margin: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+/* Konten modal (judul + deskripsi) */
+.confirm-modal-body {
+  padding: 2rem 2rem 1.5rem;
+  text-align: center;
+}
+
+/* Icon di atas modal */
+.confirm-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+
+.confirm-icon-approve {
+  background: rgba(22, 163, 74, 0.15);
+  color: #22c55e;
+}
+
+.confirm-icon-reject {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+/* Judul modal */
+.confirm-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--foreground, #fff);
+}
+
+/* Deskripsi modal */
+.confirm-description {
+  font-size: 0.875rem;
+  color: var(--muted-foreground, #999);
+  margin: 0;
+  line-height: 1.6;
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Footer modal (tombol-tombol) */
+.confirm-modal-footer {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.25rem 2rem;
+  border-top: 1px solid var(--border, #333);
+  background: var(--muted, rgba(255, 255, 255, 0.03));
+}
+
+/* Tombol dalam modal */
+.confirm-btn {
+  padding: 0.5rem 1.5rem;
+  min-width: 100px;
+}
+
+.confirm-btn-action {
+  padding: 0.5rem 1.5rem;
+  min-width: 120px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.confirm-btn-approve {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #fff;
+}
+
+/* ── Animasi Modal ── */
+
+.confirm-overlay.show {
+  display: flex !important;
+  animation: overlay-in 0.2s ease-out forwards;
+}
+
+.confirm-overlay.show .confirm-modal {
+  animation: modal-in 0.25s ease-out forwards;
+}
+
+.confirm-overlay.hiding {
+  animation: overlay-out 0.15s ease-in forwards;
+}
+
+.confirm-overlay.hiding .confirm-modal {
+  animation: modal-out 0.15s ease-in forwards;
+}
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes overlay-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.9) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes modal-out {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to { opacity: 0; transform: scale(0.9) translateY(10px); }
+}
